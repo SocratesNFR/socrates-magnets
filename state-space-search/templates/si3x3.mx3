@@ -1,0 +1,135 @@
+// Material parameters
+Msat    = 860e3
+Aex     = 2 * 13e-12 // 2x times usual
+alpha   = 0.01
+
+// Setting different material parameters in one region to introduce disorder
+//Msat_r1 := 860e3 * 0.98 // 2%
+Msat_r1 := 843e3
+Msat.SetRegion(1, Msat_r1)
+
+// Initial magnetization
+mi1 := uniform({mi1}, 0, 0)
+mi2 := uniform({mi2}, 0, 0)
+mi3 := uniform({mi3}, 0, 0)
+mi4 := uniform({mi4}, 0, 0)
+mi5 := uniform({mi5}, 0, 0)
+mi6 := uniform({mi6}, 0, 0)
+mi7 := uniform(0, {mi7}, 0)
+mi8 := uniform(0, {mi8}, 0)
+mi9 := uniform(0, {mi9}, 0)
+mi10 := uniform(0, {mi10}, 0)
+mi11 := uniform(0, {mi11}, 0)
+mi12 := uniform(0, {mi12}, 0)
+
+// External field
+B := 83e-3                            //the magnitude of the applied field
+phiMax := {phiMax}              //the maximum angle phi between +x and applied field
+phiStep := {phiStep}             //the phi step size
+
+// Output format
+OutputFormat = OVF1_TEXT 
+
+// Set up grid
+SetMesh(64, 64, 1, 10e-09, 10e-09, 15e-09, 0, 0, 0)
+
+
+// Define horizontal nanomagnets
+island1 := rect(150e-9, 40e-9).transl(-210e-9, -105e-9, 0)
+island4 := rect(150e-9, 40e-9).transl(-210e-9, 105e-9, 0) 
+island2 := rect(150e-9, 40e-9).transl(0, -105e-9, 0)
+island5 := rect(150e-9, 40e-9).transl(0, 105e-9, 0) 
+island3 := rect(150e-9, 40e-9).transl(210e-9, -105e-9, 0)
+island6 := rect(150e-9, 40e-9).transl(210e-9, 105e-9, 0) 
+
+// Define vertical nanomagnets
+island7 := rect(40e-9, 150e-9).transl(-105e-9, -210e-9, 0)
+island8 := rect(40e-9, 150e-9).transl(105e-9, -210e-9, 0)
+island9 := rect(40e-9, 150e-9).transl(-105e-9, 0, 0)
+island10 := rect(40e-9, 150e-9).transl(105e-9, 0, 0)
+island11 := rect(40e-9, 150e-9).transl(-105e-9, 210e-9, 0)
+island12 := rect(40e-9, 150e-9).transl(105e-9, 210e-9, 0)
+
+// Assign one region to each horizontal nanomagnet
+defregion(1, island1)
+defregion(2, island2)
+defregion(3, island3)
+defregion(4, island4)
+defregion(5, island5)
+defregion(6, island6)
+
+// Assign one region to each vertical nanomagnet
+defregion(7, island7)
+defregion(8, island8)
+defregion(9, island9)
+defregion(10, island10)
+defregion(11, island11)
+defregion(12, island12)
+
+// Set geometry
+islands := island1
+islands = islands.add(island2)
+islands = islands.add(island3)
+islands = islands.add(island4)
+islands = islands.add(island5)
+islands = islands.add(island6)
+islands = islands.add(island7)
+islands = islands.add(island8)
+islands = islands.add(island9)
+islands = islands.add(island10)
+islands = islands.add(island11)
+islands = islands.add(island12)
+
+setGeom(islands)
+
+// Current angle of external field
+phi := 0.0
+
+// Save magnetization of all regions to table
+tableAdd(m.Region(1))
+tableAdd(m.Region(2))
+tableAdd(m.Region(3))
+tableAdd(m.Region(4))
+tableAdd(m.Region(5))
+tableAdd(m.Region(6))
+tableAdd(m.Region(7))
+tableAdd(m.Region(8))
+tableAdd(m.Region(9))
+tableAdd(m.Region(10))
+tableAdd(m.Region(11))
+tableAdd(m.Region(12))
+// ... as well as external field and angle phi
+tableAdd(B_ext)
+tableAddVar(phi, "phi", "rad")
+
+for ; phi<=phiMax; phi += phiStep {{
+        print("phi =", phi)
+
+        // Set initial magnetization in each nanomagnet
+        m.setregion(1,  mi1)
+        m.setregion(2,  mi2)
+        m.setregion(3,  mi3)
+        m.setregion(4,  mi4)
+        m.setregion(5,  mi5)
+        m.setregion(6,  mi6)
+        m.setregion(7,  mi7)
+        m.setregion(8,  mi8)
+        m.setregion(9,  mi9)
+        m.setregion(10, mi10)
+        m.setregion(11, mi11)
+        m.setregion(12, mi12)
+
+        // Set external field
+        B_ext = vector(B*cos(phi), B*sin(phi), 0)
+        relax()
+
+        // Reset external field
+        B_ext = vector(0,0,0)
+        relax()
+
+        // So B_ext is included in tablesave
+        B_ext = vector(B*cos(phi), B*sin(phi), 0)
+
+        tablesave()
+        snapshot(m)
+}}
