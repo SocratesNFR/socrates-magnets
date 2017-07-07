@@ -4,6 +4,7 @@ import os
 import copy
 import numpy as np
 import time
+import requests
 
 
 def bit_array(x, n_bits):
@@ -50,6 +51,15 @@ class MX3Generator(object):
 
         return mx3
 
+class MX3Server(object):
+    def __init__(self, address, port=35360):
+        self.address = address
+        self.port = port
+
+    def rpc(self, method, arg=""):
+        url = "http://{addr}:{port}/do/{method}/{arg}"
+        url = url.format(addr=self.address, port=self.port, method=method, arg=arg)
+        r = requests.get(url)
 
 """
 1. Generate jobs
@@ -59,7 +69,7 @@ class MX3Generator(object):
 """
 class StateSpaceSearch(object):
 
-    def __init__(self, template, initial, params, outdir):
+    def __init__(self, template, initial, params, outdir, server):
         self.queue = [initial]
         self.running = []
         self.finished = []
@@ -68,6 +78,7 @@ class StateSpaceSearch(object):
         self.template = template
         self.mx3gen = MX3Generator(template, params)
         self.outdir = outdir
+        self.server = server
 
         root, ext = os.path.splitext(os.path.basename(template))
         self.outfile = root + "_%d" + ext
@@ -92,6 +103,9 @@ class StateSpaceSearch(object):
 
         with open(filename, 'w') as f:
             f.write(mx3)
+
+        # poke server to reload jobs
+        self.server.rpc("LoadJobs")
 
     def get_jobdir(self, config):
         base, _ = os.path.splitext(self.get_outfile(config))
@@ -175,7 +189,9 @@ def main():
             "phiStep": "45 * pi / 180",
     }
 
-    sss = StateSpaceSearch("templates/si3x3.mx3", 0xfff, params, "jobs/joh")
+    server = MX3Server("129.241.110.229")
+
+    sss = StateSpaceSearch("templates/si3x3.mx3", 0xfff, params, "jobs/joh", server)
     sss.run()
 
 if __name__ == '__main__':
