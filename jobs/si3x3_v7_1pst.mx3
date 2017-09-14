@@ -1,0 +1,284 @@
+// Output format
+OutputFormat = OVF1_TEXT 
+
+SetMesh(64, 64, 1, 10e-09,10e-09, 15e-09, 0, 0, 0)
+
+//set materials parameters
+Msat    = 860e3 
+Aex     = 2*13e-12//2x times usual
+alpha   = 0.01 
+
+//define horizontal nanomagnets
+island1 := rect(150e-9, 40e-9).transl(-210e-9, -105e-9, 0)
+island4 := rect(150e-9, 40e-9).transl(-210e-9, 105e-9, 0) 
+island2 := rect(150e-9, 40e-9).transl(0, -105e-9, 0)
+island5 := rect(150e-9, 40e-9).transl(0, 105e-9, 0) 
+island3 := rect(150e-9, 40e-9).transl(210e-9, -105e-9, 0)
+island6 := rect(150e-9, 40e-9).transl(210e-9, 105e-9, 0) 
+
+//define vertical nanomagnets
+island7 := rect(40e-9, 150e-9).transl(-105e-9, -210e-9, 0)
+island8 := rect(40e-9, 150e-9).transl(105e-9, -210e-9, 0)
+island9 := rect(40e-9, 150e-9).transl(-105e-9, 0, 0)
+island10 := rect(40e-9, 150e-9).transl(105e-9, 0, 0)
+island11 := rect(40e-9, 150e-9).transl(-105e-9, 210e-9, 0)
+island12 := rect(40e-9, 150e-9).transl(105e-9, 210e-9, 0)
+
+//assign one region to each horizontal nanomagnet
+defregion(1,island1)
+defregion(2,island2)
+defregion(3,island3)
+defregion(4,island4)
+defregion(5,island5)
+defregion(6,island6)
+
+//assign one region to each vertical nanomagnet
+defregion(7,island7)
+defregion(8,island8)
+defregion(9,island9)
+defregion(10,island10)
+defregion(11,island11)
+defregion(12,island12)
+
+//set geometry
+setGeom(island1.add(island2.add(island3.add(island4.add(island5.add(island6.add(island7.add(island8.add(island9.add(island10.add(island11.add(island12))))))))))))
+
+//Setting different material parameters in one region to introduce disorder
+Msat.SetRegion(1, 851e3) //Msat in region 1 reduced by 1%
+
+//initial magnetization
+mask:=NewScalarMask(4096, 1, 1)     //array for discovered spin ice configurations 
+current:=0.0                        //the configuration currently beeing investigated (represented by a 12-bit number)
+result:=0.0                         //the result from the current simulation (again represented in the form of a 12-bit number)
+
+
+
+mask.setScalar(0, 0, 0, 8190)       //setting the initial configuration as the firs input in the config array "mask"
+current=8190                        //setting the first configuration to be evaluated 
+number:=0.0                         //integer number used in the conversion of 12-bit number into mahnetization configuration in the spin ice array
+
+
+B:=83e-3                            //the magnitude of the applied field
+phiMax := 360*pi / 180              //the maximum angle phi between +x and applied field
+phiStep := 1 * pi / 180             //the phi step size
+
+//initialization of variables for reading out the magnetizations of the nanomagnets
+mx1:=m.Comp(0).Region(1)            
+mx1_ceil:=0.0
+mx2:=m.Comp(0).Region(2)
+mx2_ceil:=0.0
+mx3:=m.Comp(0).Region(3)
+mx3_ceil:=0.0
+mx4:=m.Comp(0).Region(4)
+mx4_ceil:=0.0
+mx5:=m.Comp(0).Region(5)
+mx5_ceil:=0.0
+mx6:=m.Comp(0).Region(6)
+mx6_ceil:=0.0
+my7:=m.Comp(1).Region(7)
+my7_ceil:=0.0
+my8:=m.Comp(1).Region(8)
+my8_ceil:=0.0
+my9:=m.Comp(1).Region(9)
+my9_ceil:=0.0
+my10:=m.Comp(1).Region(10)
+my10_ceil:=0.0
+my11:=m.Comp(1).Region(11)
+my11_ceil:=0.0
+my12:=m.Comp(1).Region(12)
+my12_ceil:=0.0
+
+//setting parameters to be written by the tablesave() commend (perhaps not needed?)
+tableAddVar(mx1_ceil, "mx1", "")
+tableAddVar(mx2_ceil, "mx2", "")
+tableAddVar(mx3_ceil, "mx3", "")
+tableAddVar(mx4_ceil, "mx4", "")
+tableAddVar(mx5_ceil, "mx5", "")
+tableAddVar(mx6_ceil, "mx6", "")
+
+tableAddVar(my7_ceil, "my7", "")
+tableAddVar(my8_ceil, "my8", "")
+tableAddVar(my9_ceil, "my9", "")
+tableAddVar(my10_ceil, "my10", "")
+tableAddVar(my11_ceil, "my11", "")
+tableAddVar(my12_ceil, "my12", "")
+
+config_num:=0.0                         //counter refering to the configuration currently being evaluated (0=initial config)
+conf_tot:=1.0                           //counter for the total number of configurations held by the mask array
+new_config:=1                           //flag used to indicate if a resulting output yields a new configuration (one that is not already in 'mask')
+
+//Fprintln("node_list.txt", "Source", "Target")
+Fprintln("edge_list.txt", "Source", "Target", "Phi")
+
+for config_num<=conf_tot { 
+
+
+    for phi:=0.0; phi<=phiMax; phi += phiStep { 
+//set initial magnetization in each nanomagnet
+number=current
+nm1:=floor(number/pow(2,12))
+if nm1==1{
+m.setregion(1,uniform(1,0,0))
+}
+if nm1==0{
+m.setregion(1,uniform(-1,0,0))
+}
+number=(number-nm1*pow(2,12))
+nm2:=floor(number/pow(2,11))
+if nm2==1{
+m.setregion(2,uniform(1,0,0))
+}
+if nm2==0{
+m.setregion(2,uniform(-1,0,0))
+}
+number=(number-nm2*pow(2,11))
+nm3:=floor(number/pow(2,10))
+if nm3==1{
+m.setregion(3,uniform(1,0,0))
+}
+if nm3==0{
+m.setregion(3,uniform(-1,0,0))
+}
+number=(number-nm3*pow(2,10))
+nm4:=floor(number/pow(2,9))
+if nm4==1{
+m.setregion(4,uniform(1,0,0))
+}
+if nm4==0{
+m.setregion(4,uniform(-1,0,0))
+}
+number=(number-nm4*pow(2,9))
+nm5:=floor(number/pow(2,8))
+if nm5==1{
+m.setregion(5,uniform(1,0,0))
+}
+if nm5==0{
+m.setregion(5,uniform(-1,0,0))
+}
+number=(number-nm5*pow(2,8))
+nm6:=floor(number/pow(2,7))
+if nm6==1{
+m.setregion(6,uniform(1,0,0))
+}
+if nm6==0{
+m.setregion(6,uniform(-1,0,0))
+}
+number=(number-nm6*pow(2,7))
+nm7:=floor(number/pow(2,6))
+if nm7==1{
+m.setregion(7,uniform(0,1,0))
+}
+if nm7==0{
+m.setregion(7,uniform(0,-1,0))
+}
+number=(number-nm7*pow(2,6))
+nm8:=floor(number/pow(2,5))
+if nm8==1{
+m.setregion(8,uniform(0,1,0))
+}
+if nm8==0{
+m.setregion(8,uniform(0,-1,0))
+}
+number=(number-nm8*pow(2,5))
+nm9:=floor(number/pow(2,4))
+if nm9==1{
+m.setregion(9,uniform(0,1,0))
+}
+if nm9==0{
+m.setregion(9,uniform(0,-1,0))
+}
+number=(number-nm9*pow(2,4))
+nm10:=floor(number/pow(2,3))
+if nm10==1{
+m.setregion(10,uniform(0,1,0))
+}
+if nm10==0{
+m.setregion(10,uniform(0,-1,0))
+}
+number=(number-nm10*pow(2,3))
+nm11:=floor(number/pow(2,2))
+if nm11==1{
+m.setregion(11,uniform(0,1,0))
+}
+if nm11==0{
+m.setregion(11,uniform(0,-1,0))
+}
+number=(number-nm11*pow(2,2))
+nm12:=floor(number/pow(2,1))
+if nm12==1{
+m.setregion(12,uniform(0,1,0))
+}
+if nm12==0{
+m.setregion(12,uniform(0,-1,0))
+}
+number=(number-nm12*pow(2,1))
+
+
+
+    B_ext = vector(B*cos(phi), B*sin(phi),0)
+    relax()
+    B_ext = vector(0,0,0)
+    relax()
+
+    mx1=m.Comp(0).Region(1)
+    mx1_ceil=ceil(mx1.average())  
+    mx2=m.Comp(0).Region(2)
+    mx2_ceil=ceil(mx2.average())
+    mx3=m.Comp(0).Region(3)
+    mx3_ceil=ceil(mx3.average())
+    mx4=m.Comp(0).Region(4)
+    mx4_ceil=ceil(mx4.average())
+    mx5=m.Comp(0).Region(5)
+    mx5_ceil=ceil(mx5.average())
+    mx6=m.Comp(0).Region(6)
+    mx6_ceil=ceil(mx6.average())
+    my7=m.Comp(1).Region(7)
+    my7_ceil=ceil(my7.average())
+    my8=m.Comp(1).Region(8)
+    my8_ceil=ceil(my8.average())
+    my9=m.Comp(1).Region(9)
+    my9_ceil=ceil(my9.average())
+    my10=m.Comp(1).Region(10)
+    my10_ceil=ceil(my10.average())
+    my11=m.Comp(1).Region(11)
+    my11_ceil=ceil(my11.average())
+    my12=m.Comp(1).Region(12)
+    my12_ceil=ceil(my12.average())
+    
+result=mx1_ceil*pow(2,12)+mx2_ceil*pow(2,11)+mx3_ceil*pow(2,10)+mx4_ceil*pow(2,9)+mx5_ceil*pow(2,8)+mx6_ceil*pow(2,7)+my7_ceil*pow(2,6)+my8_ceil*pow(2,5)+my9_ceil*pow(2,4)+my10_ceil*pow(2,3)+my11_ceil*pow(2,2)+my12_ceil*pow(2,1)
+
+result=abs(result) //ensures that -0 does not show up in the result list as different from 0
+
+    if current !=result{    
+            tablesave()
+            Fprintln("edge_list.txt", sprint(current), sprint(result), sprint(phi))  //add phi here?  
+            for l:=0.0;l<conf_tot;l++{
+                if mask.Get(0,l,0,0)==result{
+                new_config=0
+                }
+                }
+            if new_config == 1 {
+            mask.setScalar(conf_tot, 0, 0, result)
+            snapshot(m)
+            
+            conf_tot=conf_tot+1
+            //Fprintln("node_list.txt", sprint(current), sprint(result))  //not really needed          
+            }        
+            }
+
+new_config=1
+           
+           
+            }  //phi loop
+            
+
+config_num=config_num+1
+
+current=mask.Get(0,config_num, 0, 0)
+
+Fprintln("iteration_list.txt", sprint(config_num), sprint(conf_tot))
+print("--------")
+print(config_num)
+print(conf_tot)
+print("--------")
+}
