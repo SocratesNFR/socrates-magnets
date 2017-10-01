@@ -1,8 +1,9 @@
 import copy
 import subprocess
+import os
 
-class MX3Generator(object):
-    def __init__(self, template, params):
+class Template(object):
+    def __init__(self, template, params={}):
         self.template = template
         self.params = dict(params)
 
@@ -22,8 +23,8 @@ class MX3Generator(object):
             f.write(mx3)
 
 def gen_job(template, outfile, **params):
-    mx3gen = MX3Generator(template, params)
-    mx3gen.write(outfile)
+    tpl = Template(template, params)
+    tpl.write(outfile)
 
 def run_local(jobs, wait=True):
     procs = []
@@ -39,8 +40,35 @@ def run_local(jobs, wait=True):
 
     return procs
 
-def run_dist(jobs):
-    # generate job script
-    # submit job
-    # (optionally) wait for completion
-    raise NotImplementedError()
+def run_dist(jobs, wait=True, job_script_template="templates/mumax3.pbs.sh"):
+    #
+    # Generate job script
+    #
+    commands = []
+    for i, job in enumerate(jobs):
+        cmd = "mumax3 -gpu {} {} &".format(i, job)
+        commands.append(cmd)
+    commands = "\n".join(commands)
+
+    # Put job script in same directory as first jobs file
+    job_script_dir = os.path.dirname(jobs[0])
+
+    # Name job script as concatenation of job names
+    job_names = [os.path.splitext(os.path.basename(job))[0] for job in jobs]
+    job_script_name = "__".join(job_names) + ".pbs.sh"
+
+    job_script = os.path.join(job_script_dir, job_script_name)
+
+    tpl = Template(job_script_template)
+    tpl.write(job_script, commands=commands)
+
+    #
+    # Submit job
+    #
+    qsub = ['qsub', '-Wblock=true', job_script]
+    p = subprocess.Popen(qsub)
+
+    if wait:
+        p.wait()
+
+    return p

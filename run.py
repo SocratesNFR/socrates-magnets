@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import argparse
-from mx3util import gen_job, run_local
+from mx3util import gen_job, run_local, run_dist
 
 def main(args):
     gen_job(args.template, args.out, **args.param)
@@ -8,7 +8,7 @@ def main(args):
         procs = run_local([args.out])
 
     elif args.run == 'dist':
-        raise NotImplementedError('not yet implemented')
+        run_dist([args.out])
 
 class StoreKeyValue(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
