@@ -2,7 +2,7 @@
 import os
 import time
 import argparse
-from mx3util import gen_job, run_local, run_dist
+from mx3util import gen_job, run_local, run_dist, StoreKeyValue
 import numpy as np
 
 n_gpus_dist = 2
@@ -38,14 +38,6 @@ def main(args):
         # Wait for all jobs to finish
         while not all([p.poll() is not None for p in procs]):
             time.sleep(1)
-
-class StoreKeyValue(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        k, v = values.split('=')
-        if getattr(namespace, self.dest) is None:
-            setattr(namespace, self.dest, {})
-        d = getattr(namespace, self.dest)
-        d[k] = v
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run mx3 job')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-from mx3util import gen_job, run_local, run_dist
+from mx3util import gen_job, run_local, run_dist, StoreKeyValue
 
 def main(args):
     gen_job(args.template, args.out, **args.param)
@@ -9,14 +9,6 @@ def main(args):
 
     elif args.run == 'dist':
         run_dist([args.out])
-
-class StoreKeyValue(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        k, v = values.split('=')
-        if getattr(namespace, self.dest) is None:
-            setattr(namespace, self.dest, {})
-        d = getattr(namespace, self.dest)
-        d[k] = v
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run mx3 job')

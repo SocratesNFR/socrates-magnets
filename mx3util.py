@@ -1,6 +1,7 @@
 import copy
 import subprocess
 import os
+import argparse
 
 class Template(object):
     def __init__(self, template, params={}):
@@ -72,3 +73,11 @@ def run_dist(jobs, wait=True, job_script_template="templates/mumax3.pbs.sh"):
         p.wait()
 
     return p
+
+class StoreKeyValue(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        k, v = values.split('=')
+        if getattr(namespace, self.dest) is None:
+            setattr(namespace, self.dest, {})
+        d = getattr(namespace, self.dest)
+        d[k] = v
