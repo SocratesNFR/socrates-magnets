@@ -2,6 +2,10 @@ import copy
 import subprocess
 import os
 import argparse
+try:
+    from subprocess import DEVNULL
+except ImportError:
+    DEVNULL = open(os.devnull, 'w')
 
 class Template(object):
     def __init__(self, template, params={}):
@@ -27,11 +31,15 @@ def gen_job(template, outfile, **params):
     tpl = Template(template, params)
     tpl.write(outfile)
 
-def run_local(jobs, wait=True):
+def run_local(jobs, wait=True, quiet=False):
     cmd = ['mumax3']
     # mumax3 can handle and queue multiple jobs
     cmd.extend(jobs)
-    p = subprocess.Popen(cmd)
+    print("run_local:", cmd)
+    if quiet:
+        p = subprocess.Popen(cmd, stdout=DEVNULL, stderr=DEVNULL)
+    else:
+        p = subprocess.Popen(cmd)
 
     if wait:
         p.wait()
