@@ -1,0 +1,12 @@
+SetGridsize(128, 32, 1)
+SetCellsize(500e-9/128, 125e-9/32, 3e-9)
+
+Msat  = 800e3
+Aex   = 13e-12
+alpha = 0.02
+
+m = uniform({mx}, {my}, {mz})
+snapshot(m)
+
+relax()
+snapshot(m)
