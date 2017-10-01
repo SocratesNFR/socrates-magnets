@@ -28,29 +28,20 @@ def gen_job(template, outfile, **params):
     tpl.write(outfile)
 
 def run_local(jobs, wait=True):
-    procs = []
-    for i, job in enumerate(jobs):
-        cmd = ['mumax3', '-gpu', str(i), job]
-        print("run_local:", cmd)
-        p = subprocess.Popen(cmd)
-        procs.append(p)
+    cmd = ['mumax3']
+    # mumax3 can handle and queue multiple jobs
+    cmd.extend(jobs)
+    p = subprocess.Popen(cmd)
 
     if wait:
-        for p in procs:
-            p.wait()
+        p.wait()
 
-    return procs
+    return p
 
 def run_dist(jobs, wait=True, job_script_template="templates/mumax3.pbs.sh"):
     #
     # Generate job script
     #
-    commands = []
-    for i, job in enumerate(jobs):
-        cmd = "mumax3 -gpu {} {} &".format(i, job)
-        commands.append(cmd)
-    commands = "\n".join(commands)
-
     # Put job script in same directory as first jobs file
     job_script_dir = os.path.dirname(jobs[0])
 
@@ -59,9 +50,10 @@ def run_dist(jobs, wait=True, job_script_template="templates/mumax3.pbs.sh"):
     job_script_name = "__".join(job_names) + ".pbs.sh"
 
     job_script = os.path.join(job_script_dir, job_script_name)
+    jobs_param = " ".join(jobs)
 
     tpl = Template(job_script_template)
-    tpl.write(job_script, commands=commands)
+    tpl.write(job_script, jobs=jobs_param)
 
     #
     # Submit job

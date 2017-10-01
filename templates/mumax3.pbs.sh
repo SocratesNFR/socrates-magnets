@@ -14,6 +14,4 @@ export PATH=$PATH:/usr/local/cuda-8.0/bin
 
 cd $PBS_O_WORKDIR
 
-{commands}
-
-wait
+mumax3 {jobs}

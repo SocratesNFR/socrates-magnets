@@ -5,7 +5,7 @@ from mx3util import gen_job, run_local, run_dist, StoreKeyValue
 def main(args):
     gen_job(args.template, args.out, **args.param)
     if args.run == 'local':
-        procs = run_local([args.out])
+        run_local([args.out])
 
     elif args.run == 'dist':
         run_dist([args.out])
