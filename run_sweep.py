@@ -21,10 +21,7 @@ def main(args):
         queue.append(out)
 
     if args.run == 'local':
-        while queue:
-            # TODO: We assume only one gpu
-            jobs = queue.pop(0)
-            run_local([jobs])
+        run_local(queue)
 
     elif args.run == 'dist':
         # Submit jobs in chunks of n_gpus_dist
