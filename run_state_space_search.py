@@ -69,6 +69,10 @@ class StateSpaceSearch(object):
         print("analyze_job", config, jobdir)
 
         tablefile = os.path.join(jobdir, "table.txt")
+        while not os.path.exists(tablefile):
+            print("waiting for {}...".format(jobdir))
+            time.sleep(1)
+
         table = np.loadtxt(tablefile)
 
         # x components for horizontal nanomagnets
@@ -136,8 +140,9 @@ class StateSpaceSearch(object):
                     p = run_local([job], wait=True, quiet=True)
                     self.procs[config] = p
                 else:
-                    configs = self.queue[0:ngpus]
-                    del self.queue[0:ngpus]
+                    configs = self.queue[0:self.ngpus]
+                    del self.queue[0:self.ngpus]
+                    self.running.extend(configs)
                     jobs = []
                     for config in configs:
                         job = self.gen_job(config)
