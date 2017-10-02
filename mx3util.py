@@ -46,7 +46,11 @@ def run_local(jobs, wait=True, quiet=False):
 
     return p
 
-def run_dist(jobs, wait=True, job_script_template="templates/mumax3.pbs.sh"):
+DEFAULT_JOB_SCRIPT_TEMPLATE = os.path.join(
+        os.path.dirname(__file__),
+        "templates/mumax3.pbs.sh")
+
+def run_dist(jobs, wait=True, job_script_template=DEFAULT_JOB_SCRIPT_TEMPLATE):
     #
     # Generate job script
     #
