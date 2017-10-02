@@ -116,9 +116,9 @@ class StateSpaceSearch(object):
 
     prev_s = ""
     def print_new(self, s):
-        if s != prev_s:
+        if s != self.prev_s:
             print(s)
-            prev_s = s
+            self.prev_s = s
 
     def poll(self, interval=1):
         # Look for completed jobs, iterating over a copy of the running list
