@@ -2,6 +2,7 @@
 import sys
 import os
 import time
+import datetime
 import argparse
 import numpy as np
 from mx3util import gen_job, run_local, run_dist, StoreKeyValue, Template
@@ -51,8 +52,6 @@ class StateSpaceSearch(object):
         filename = self.get_outfile(config)
         filename = os.path.join(self.outdir, filename)
 
-        print("gen_job: {}".format(filename))
-
         params = {}
         config_array = bit_array(config, 12)
 
@@ -70,11 +69,11 @@ class StateSpaceSearch(object):
         return jobdir
 
     def analyze_job(self, config, jobdir):
-        print("analyze_job", config, jobdir)
+        print("Analyzing job: {}".format(jobdir))
 
         tablefile = os.path.join(jobdir, "table.txt")
         while not os.path.exists(tablefile):
-            print("waiting for {}...".format(jobdir))
+            print("Waiting for {}...".format(tablefile))
             time.sleep(1)
 
         table = np.loadtxt(tablefile)
@@ -94,15 +93,13 @@ class StateSpaceSearch(object):
         states[states < 0] = 0
         states = states.astype(int)
 
-        print("states=", states)
-
         states = list(map(array_bit, states))
 
-        print("states=", states)
+        print("State {} -> {}".format(config, np.unique(states)))
 
         for s in states:
             if s not in self.finished and s not in self.queue and s not in self.running:
-                print("new state:", s)
+                print("New state: {}".format(s))
                 self.queue.append(s)
 
         # Update edgelist
@@ -110,7 +107,7 @@ class StateSpaceSearch(object):
             self.edgelist.append((config, s, phi))
 
     def write_edgelist(self, filename):
-        print("write_edgelist", filename)
+        print("Writing edgelist to {}".format(filename))
 
         f = open(filename, 'w')
         for n1, n2, phi in self.edgelist:
@@ -127,9 +124,13 @@ class StateSpaceSearch(object):
             jobdir = self.get_jobdir(config)
             self.running.remove(config)
             self.finished.append(config)
+
+            print("Job finished: {}".format(jobdir))
+
             self.analyze_job(config, jobdir)
 
-        print("poll queued={} running={} finished={}".format(self.queue, self.running, self.finished))
+        print("Poll: {} queued, {} running, {} finished".format(
+            len(self.queue), len(self.running), len(self.finished)))
 
         time.sleep(interval)
 
@@ -139,6 +140,9 @@ class StateSpaceSearch(object):
         return configs
 
     def run(self):
+        t0 = time.time()
+        print("Started on {}".format(time.asctime()))
+
         while self.queue or self.running:
             while self.queue:
                 configs = self.dequeue(self.ngpus)
@@ -148,6 +152,8 @@ class StateSpaceSearch(object):
                 for config in configs:
                     job = self.gen_job(config)
                     jobs.append(job)
+
+                print("Starting jobs: {}".format(" ".join(jobs)))
 
                 if self.runtype == 'local':
                     p = run_local(jobs, wait=True, quiet=True)
@@ -163,10 +169,14 @@ class StateSpaceSearch(object):
         filename = os.path.join(self.outdir, base + "-edgelist.txt")
         self.write_edgelist(filename)
 
-        print("Finished!")
-        # TODO: runtime
-        print("{} states discovered:".format(len(self.finished)))
-        print(" ".join(map(str, self.finished)))
+        t1 = time.time()
+        dt = t1 - t0
+        delta = datetime.timedelta(seconds=dt)
+
+        print("Completed on {}".format(time.asctime()))
+        print("Duration: {}".format(delta))
+        print("{} states found".format(len(self.finished)))
+        print("See {} for details".format(filename))
 
 
 

@@ -35,7 +35,6 @@ def run_local(jobs, wait=True, quiet=False):
     cmd = ['mumax3']
     # mumax3 can handle and queue multiple jobs
     cmd.extend(jobs)
-    print("run_local:", cmd)
     if quiet:
         p = subprocess.Popen(cmd, stdout=DEVNULL, stderr=DEVNULL)
     else:
