@@ -183,8 +183,8 @@ class StateSpaceSearch(object):
 def main(args):
     # Default params
     params = {
-            "phiMax": "360 * pi / 180",
-            "phiStep": "45 * pi / 180",
+            "phiMax": "360",
+            "phiStep": "1",
             "pst": "0.0",
     }
 

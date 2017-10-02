@@ -23,8 +23,8 @@ mi12 := uniform(0, {mi12}, 0)
 
 // External field
 B := 83e-3                            //the magnitude of the applied field
-phiMax := {phiMax}              //the maximum angle phi between +x and applied field
-phiStep := {phiStep}             //the phi step size
+phiMax := {phiMax} * pi / 180         //the maximum angle phi between +x and applied field
+phiStep := {phiStep} * pi / 180       //the phi step size
 
 // Output format
 OutputFormat = OVF1_TEXT 
