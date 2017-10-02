@@ -114,6 +114,12 @@ class StateSpaceSearch(object):
             f.write("{} {} {}\r\n".format(n1, n2, phi))
         f.close()
 
+    prev_s = ""
+    def print_new(self, s):
+        if s != prev_s:
+            print(s)
+            prev_s = s
+
     def poll(self, interval=1):
         # Look for completed jobs, iterating over a copy of the running list
         for config in list(self.running):
@@ -129,7 +135,7 @@ class StateSpaceSearch(object):
 
             self.analyze_job(config, jobdir)
 
-        print("Poll: {} queued, {} running, {} finished".format(
+        self.print_new("Poll: {} queued, {} running, {} finished".format(
             len(self.queue), len(self.running), len(self.finished)))
 
         time.sleep(interval)
