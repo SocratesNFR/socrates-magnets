@@ -3,8 +3,8 @@
 #PBS -q epic
 #PBS -l walltime=24:00:00
 #PBS -l select=1:ncpus=36
-#PBS -o pbs/
-#PBS -e pbs/
+#PBS -o {job_script_dir}
+#PBS -e {job_script_dir}
 
 set -e
 

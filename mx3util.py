@@ -64,7 +64,7 @@ def run_dist(jobs, wait=True, job_script_template=DEFAULT_JOB_SCRIPT_TEMPLATE):
     jobs_param = " ".join(jobs)
 
     tpl = Template(job_script_template)
-    tpl.write(job_script, jobs=jobs_param)
+    tpl.write(job_script, jobs=jobs_param, job_script_dir=job_script_dir)
 
     #
     # Submit job
