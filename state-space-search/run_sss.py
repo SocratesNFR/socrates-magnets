@@ -30,8 +30,12 @@ class StateSpaceSearch(object):
         self.finished = []
         self.edgelist = []
         self.procs = {}
-        self.ngpus = ngpus
 
+        self.ngpus = ngpus
+        if runtype == 'local':
+            self.ngpus = 1
+
+        self.template = template
         self.tpl = Template(template, params)
         self.outdir = outdir
 
@@ -129,32 +133,35 @@ class StateSpaceSearch(object):
 
         time.sleep(interval)
 
+    def dequeue(self, n):
+        configs = self.queue[0:n]
+        del self.queue[0:n]
+        return configs
+
     def run(self):
         while self.queue or self.running:
             while self.queue:
-                if self.runtype == 'local':
-                    # TODO: We assume only one gpu
-                    config = self.queue.pop(0)
-                    self.running.append(config)
-                    job = self.gen_job(config)
-                    p = run_local([job], wait=True, quiet=True)
-                    self.procs[config] = p
-                else:
-                    configs = self.queue[0:self.ngpus]
-                    del self.queue[0:self.ngpus]
-                    self.running.extend(configs)
-                    jobs = []
-                    for config in configs:
-                        job = self.gen_job(config)
-                        jobs.append(job)
+                configs = self.dequeue(self.ngpus)
+                self.running.extend(configs)
 
+                jobs = []
+                for config in configs:
+                    job = self.gen_job(config)
+                    jobs.append(job)
+
+                if self.runtype == 'local':
+                    p = run_local(jobs, wait=True, quiet=True)
+                else:
                     p = run_dist(jobs, wait=False)
-                    for config in configs:
-                        self.procs[config] = p
+
+                for config in configs:
+                    self.procs[config] = p
 
             self.poll()
 
-        self.write_edgelist("edgelist.txt")
+        base, _ = os.path.splitext(os.path.basename(self.template))
+        filename = os.path.join(self.outdir, base + "-edgelist.txt")
+        self.write_edgelist(filename)
 
         print("Finished!")
         # TODO: runtime
