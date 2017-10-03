@@ -7,16 +7,17 @@ import numpy as np
 
 n_gpus_dist = 2
 
-def main(args):
-    mx = np.linspace(-1, 1, 11)
+def params_iter():
+    for f in np.linspace(1e9, 1e8, 10):
+        yield {'B': 83e-3, 'f': f, 'pst': '0.0'}
 
+def main(args):
     queue = []
 
-    for i, x in enumerate(mx):
+    for i, params in enumerate(params_iter()):
         base, ext = os.path.splitext(os.path.basename(args.template))
         outfile = "{}.{:03d}{}".format(base, i, ext)
         out = os.path.join(args.outdir, outfile)
-        params = {'mx': x, 'my': 1, 'mz': 0}
         gen_job(args.template, out, **params)
         queue.append(out)
 
