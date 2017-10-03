@@ -43,8 +43,9 @@ def main(args):
     else:
         variables = range(1, data.shape[1])
 
+    t = data[:,0]
     for v in variables:
-        plt.plot(data[:,0], data[:,v], label=headers[v])
+        plt.plot(t, data[:,v], label=headers[v])
 
     # Shrink current axis by 10%
     ax = plt.gca()
@@ -53,11 +54,12 @@ def main(args):
 
     plt.xlabel("t")
     plt.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
+    plt.xlim(0, t[-1])
 
     if args.output:
         plt.savefig(args.output)
-
-    plt.show()
+    else:
+        plt.show()
 
 if __name__ == '__main__':
     import argparse
