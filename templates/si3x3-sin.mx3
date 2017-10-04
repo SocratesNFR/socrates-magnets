@@ -24,7 +24,7 @@ mi12 := uniform(0, 1, 0)
 // External field
 B := {B}                            //the magnitude of the applied field
 f := {f} // frequency
-periods := 3
+periods := {periods}
 
 // Output format
 OutputFormat = OVF1_TEXT 
