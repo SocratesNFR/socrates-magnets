@@ -8,8 +8,11 @@ import numpy as np
 n_gpus_dist = 2
 
 def params_iter():
-    for f in np.linspace(1e9, 1e8, 10):
-        yield {'B': 83e-3, 'f': f, 'pst': '0.0'}
+    # for f in np.linspace(1e9, 1e8, 10):
+        # yield {'B': 83e-3, 'f': f, 'pst': '0.0', 'periods': 10}
+    # for B in np.linspace(0e-3, 100e-3, 11):
+    for B in np.arange(70e-3, 90e-3, 1e-3):
+        yield {'B': B, 'f': 1e8, 'pst': '0.0', 'periods': 10}
 
 def main(args):
     queue = []
