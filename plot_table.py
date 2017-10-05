@@ -52,6 +52,7 @@ def main(args):
     box = ax.get_position()
     ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
 
+    plt.title(args.filename)
     plt.xlabel("t")
     plt.legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
     plt.xlim(0, t[-1])
