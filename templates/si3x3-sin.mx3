@@ -4,8 +4,8 @@ Aex     = 2 * 13e-12 // 2x times usual
 alpha   = 0.01
 
 // Setting different material parameters in one region to introduce disorder
-//Msat_r1 := 860e3 * (1.0 - {pst})
-//Msat.SetRegion(1, Msat_r1)
+Msat_r1 := 860e3 * (1.0 - {pst})
+Msat.SetRegion(1, Msat_r1)
 
 // Initial magnetization
 mi1 := uniform(1, 0, 0)
