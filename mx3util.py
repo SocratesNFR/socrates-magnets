@@ -2,6 +2,8 @@ import copy
 import subprocess
 import os
 import argparse
+import re
+import numpy as np
 try:
     from subprocess import DEVNULL
 except ImportError:
@@ -84,3 +86,31 @@ class StoreKeyValue(argparse.Action):
             setattr(namespace, self.dest, {})
         d = getattr(namespace, self.dest)
         d[k] = v
+
+def parse_table_header(filename):
+    r = re.compile('(\S+) \((\S*)\)')
+    with open(filename) as f:
+        l = f.readline()
+        l = l.strip('# \n')
+        head = l.split('\t')
+        head = [r.match(h).groups() for h in head]
+        headers = [h[0] for h in head]
+        units = [h[1] for h in head]
+        # indices = OrderedDict([(headers[i], i) for i in range(len(headers))])
+        # return indices
+        return headers, units
+
+
+def load_table(filename, columns=None):
+    data = np.loadtxt(filename)
+
+    if not columns:
+        return data
+
+    headers, units = parse_table_header(filename)
+    vmap = dict(zip(headers, range(len(headers))))
+    indices = []
+    for v in columns:
+        indices.append(vmap[v])
+
+    return data[:,indices]

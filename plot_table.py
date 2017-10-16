@@ -3,22 +3,13 @@ import sys
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+from mx3util import parse_table_header, load_table
 
 plt.style.use('ggplot')
 
 def main(args):
     # get header
-    r = re.compile('(\S+) \((\S*)\)')
-    with open(args.filename) as f:
-        l = f.readline()
-        l = l.strip('# \n')
-        head = l.split('\t')
-        head = [r.match(h).groups() for h in head]
-        headers = [h[0] for h in head]
-        units = [h[1] for h in head]
-        indices = dict([(headers[i], i) for i in range(len(headers))])
-        # print(header)
-        # print(indices)
+    headers, _ = parse_table_header(args.filename)
 
     if args.list:
         print("Available variables from {}:".format(args.filename))
@@ -30,23 +21,25 @@ def main(args):
     data = np.loadtxt(args.filename)
 
     if args.var:
-        variables = []
+        variables = ['t']
         for v in args.var:
-            if v in indices:
-                variables.append(indices[v])
-            elif v + "x" in indices:
-                variables.append(indices[v + "x"])
-                variables.append(indices[v + "y"])
-                variables.append(indices[v + "z"])
+            if v in headers:
+                variables.append(v)
+            elif v + "x" in headers:
+                variables.append(v + "x")
+                variables.append(v + "y")
+                variables.append(v + "z")
             else:
                 raise IndexError(v)
     else:
-        variables = range(1, data.shape[1])
+        variables = headers
 
-    t = data[:,0]
-    for v in variables:
-        d = data[:,v]
-        plt.plot(t, d, label=headers[v])
+    data = load_table(args.filename, variables)
+
+    t = data[:,0] # first is always time
+    for i, v in enumerate(variables[1:], start=1):
+        d = data[:,i]
+        plt.plot(t, d, label=v)
 
         if args.digitize:
             dd = np.where(d > 0, 1, 0)
