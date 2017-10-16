@@ -45,7 +45,13 @@ def main(args):
 
     t = data[:,0]
     for v in variables:
-        plt.plot(t, data[:,v], label=headers[v])
+        d = data[:,v]
+        plt.plot(t, d, label=headers[v])
+
+        if args.digitize:
+            dd = np.where(d > 0, 1, 0)
+            plt.plot(t, -1.5 + 0.2 * dd)
+
 
     # Shrink current axis by 10%
     ax = plt.gca()
@@ -72,6 +78,7 @@ if __name__ == '__main__':
                         help='save plot to file')
     parser.add_argument('-l', '--list', action='store_true',
                         help='list available variables')
+    parser.add_argument('-d', '--digitize', action='store_true')
     parser.add_argument('var', nargs='*',
                         help='list of variables to plot')
 
