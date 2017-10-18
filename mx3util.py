@@ -102,15 +102,13 @@ def parse_table_header(filename):
 
 
 def load_table(filename, columns=None):
-    data = np.loadtxt(filename)
+    cols = None
 
-    if not columns:
-        return data
+    if columns:
+        headers, units = parse_table_header(filename)
+        vmap = dict(zip(headers, range(len(headers))))
+        cols = []
+        for v in columns:
+            cols.append(vmap[v])
 
-    headers, units = parse_table_header(filename)
-    vmap = dict(zip(headers, range(len(headers))))
-    indices = []
-    for v in columns:
-        indices.append(vmap[v])
-
-    return data[:,indices]
+    return np.loadtxt(filename, usecols=cols)
