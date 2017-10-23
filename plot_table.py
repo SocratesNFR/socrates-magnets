@@ -35,6 +35,8 @@ def main(args):
         variables = headers
 
     data = load_table(args.filename, variables)
+    t0 = args.t0
+    t1 = args.t1
 
     n_rows = 1
     if args.digitize:
@@ -43,9 +45,9 @@ def main(args):
     axes = np.atleast_1d(axes)
     axes = axes.flatten()
 
-    t = data[:,0] # first is always time
+    t = data[t0:t1,0] # first is always time
     for i, v in enumerate(variables[1:], start=1):
-        d = data[:,i]
+        d = data[t0:t1,i]
         line, = axes[0].plot(t, d, label=v)
 
         if args.digitize:
@@ -60,7 +62,7 @@ def main(args):
 
     fig.suptitle(args.filename)
     axes[0].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
-    axes[0].set_xlim(0, t[-1])
+    axes[0].set_xlim(t[0], t[-1])
 
     axes[-1].set_xlabel("t")
     if args.digitize:
@@ -82,6 +84,10 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--list', action='store_true',
                         help='list available variables')
     parser.add_argument('-d', '--digitize', action='store_true')
+    parser.add_argument('-t0', type=int, default=0,
+                        help='start at sample')
+    parser.add_argument('-t1', type=int, default=None)
+                        help='stop at sample')
     parser.add_argument('var', nargs='*',
                         help='list of variables to plot')
 
