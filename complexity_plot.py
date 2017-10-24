@@ -7,10 +7,6 @@ import pickle
 
 plt.style.use('ggplot')
 
-# Hard-coded x axis values for now...
-x = np.linspace(10e-3, 100e-3, 10)
-xlabel = "B"
-
 def main(args):
     print("Loading {}...".format(args.filename))
 
@@ -18,6 +14,8 @@ def main(args):
     complexity = data['complexity']
     keys = sorted(complexity.keys())
     values = [complexity[k] for k in keys]
+    xlabel = data.get('param_name', None)
+    x = data.get('params', keys)
 
     n_results = len(values)
     n_runs = np.mean([len(v) for v in values])
@@ -29,7 +27,7 @@ def main(args):
     std = np.array([np.std(v) for v in values])
 
     for i, v in enumerate(mean):
-        print("  {:.2f}: mean={:.2f} std={:.2f} #runs={}".format(x[i], mean[i], std[i], len(values[i])))
+        print("  {}: mean={:.2f} std={:.2f} #runs={}".format(x[i], mean[i], std[i], len(values[i])))
 
     plt.title(os.path.basename(args.filename))
 
@@ -41,7 +39,8 @@ def main(args):
     line, = plt.plot(x, mean)
     plt.fill_between(x, mean-std, mean+std, alpha=0.25, facecolor=line.get_color())
 
-    plt.xlabel(xlabel)
+    if xlabel:
+        plt.xlabel(xlabel)
     plt.ylim(ymin=0)
     plt.ylabel("Complexity")
 
