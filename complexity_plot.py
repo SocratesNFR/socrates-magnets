@@ -53,22 +53,38 @@ def main(args):
     y = [ydata[xi] for xi in x]
 
     mean = np.array([np.mean(yi) for yi in y])
+    max = np.array([np.max(yi) for yi in y])
     std = np.array([np.std(yi) for yi in y])
 
     print("Stats:")
     for i in range(len(mean)):
         print("  {:.3f}: mean={:.2f} std={:.2f} #runs={}".format(x[i], mean[i], std[i], len(y[i])))
 
-    title = ", ".join(map(os.path.basename, args.filenames))
-    plt.title(title)
+    title = " + ".join(map(os.path.basename, args.filenames))
+    plt.suptitle(title)
 
-    c = None
-    for xi, yi in zip(x, y):
-        line, = plt.plot(np.repeat(xi, len(yi)), yi, '.', color=c)
-        c = line.get_color()
+    line_color = None
 
-    line, = plt.plot(x, mean)
-    plt.fill_between(x, mean-std, mean+std, alpha=0.25, facecolor=line.get_color())
+    plot = args.plot.split(',')
+    if 'all' in plot:
+        plot = ['mean', 'std', 'max', 'scatter']
+
+    for p in plot:
+        if p == 'mean':
+            line, = plt.plot(x, mean)
+            line_color = line.get_color()
+        elif p == 'max':
+            plt.plot(x, max)
+        elif p == 'std':
+            line = plt.fill_between(x, mean-std, mean+std, alpha=0.25, facecolor=line_color)
+            line_color = line.get_facecolor()
+        elif p == 'scatter':
+            c = None
+            for xi, yi in zip(x, y):
+                line, = plt.plot(np.repeat(xi, len(yi)), yi, '.', color=c)
+                c = line.get_color()
+        else:
+            raise ValueError(p)
 
     if xlabel:
         plt.xlabel(xlabel)
@@ -86,6 +102,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Complexity plot')
     parser.add_argument('-o', '--output', metavar='FILE',
                         help='save plot to file')
+    parser.add_argument('-p', '--plot', default='scatter,mean,std',
+                        help='what to plot [mean|std|max|scatter] (default: %(default)s)')
     parser.add_argument('filenames', metavar='FILE', nargs='+',
                         help='pickle file from complexity_analysis.py')
 
