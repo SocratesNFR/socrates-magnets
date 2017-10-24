@@ -4,36 +4,67 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
+from collections import defaultdict
 
 plt.style.use('ggplot')
 
+def load_files(filenames):
+    xlabel = None
+    y = defaultdict(list)
+    has_params = False
+
+    for filename in filenames:
+        print("Loading {}...".format(filename))
+
+        data = pickle.load(open(filename, 'rb'))
+        complexity = data['complexity']
+        keys = sorted(complexity.keys())
+        values = [complexity[k] for k in keys]
+
+        if 'param_name' in data:
+            xlabel = data['param_name']
+
+        # All files must either have params or none at all
+        if 'params' in data:
+            has_params = True
+        assert has_params and 'params' in data
+
+        params = data.get('params', keys)
+
+        n_results = len(values)
+        n_runs = np.mean([len(v) for v in values])
+
+        print("  {} results, {} runs each".format(n_results, n_runs))
+        print("  Compression: {}".format(data['compression']))
+        if 'param_name' in data:
+            print("  Param name: {}".format(data['param_name']))
+        print("  Params: {}".format(keys))
+
+        for x, v in zip(params, values):
+            y[x].extend(v)
+
+    return y, xlabel
+
+
 def main(args):
-    print("Loading {}...".format(args.filename))
+    ydata, xlabel = load_files(args.filenames)
 
-    data = pickle.load(open(args.filename, 'rb'))
-    complexity = data['complexity']
-    keys = sorted(complexity.keys())
-    values = [complexity[k] for k in keys]
-    xlabel = data.get('param_name', None)
-    x = data.get('params', keys)
+    x = sorted(ydata.keys())
+    y = [ydata[xi] for xi in x]
 
-    n_results = len(values)
-    n_runs = np.mean([len(v) for v in values])
+    mean = np.array([np.mean(yi) for yi in y])
+    std = np.array([np.std(yi) for yi in y])
 
-    print("  {} results, {} runs each".format(n_results, n_runs))
-    print("  Compression: {}".format(data['compression']))
+    print("Stats:")
+    for i in range(len(mean)):
+        print("  {:.3f}: mean={:.2f} std={:.2f} #runs={}".format(x[i], mean[i], std[i], len(y[i])))
 
-    mean = np.array([np.mean(v) for v in values])
-    std = np.array([np.std(v) for v in values])
-
-    for i, v in enumerate(mean):
-        print("  {}: mean={:.2f} std={:.2f} #runs={}".format(x[i], mean[i], std[i], len(values[i])))
-
-    plt.title(os.path.basename(args.filename))
+    title = ", ".join(map(os.path.basename, args.filenames))
+    plt.title(title)
 
     c = None
-    for xi,v in zip(x, values):
-        line, = plt.plot(np.repeat(xi, len(v)), v, '.', color=c)
+    for xi, yi in zip(x, y):
+        line, = plt.plot(np.repeat(xi, len(yi)), yi, '.', color=c)
         c = line.get_color()
 
     line, = plt.plot(x, mean)
@@ -55,7 +86,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Complexity plot')
     parser.add_argument('-o', '--output', metavar='FILE',
                         help='save plot to file')
-    parser.add_argument('filename', metavar='FILE',
+    parser.add_argument('filenames', metavar='FILE', nargs='+',
                         help='pickle file from complexity_analysis.py')
 
     args = parser.parse_args()
