@@ -86,7 +86,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--digitize', action='store_true')
     parser.add_argument('-t0', type=int, default=0,
                         help='start at sample')
-    parser.add_argument('-t1', type=int, default=None)
+    parser.add_argument('-t1', type=int, default=None,
                         help='stop at sample')
     parser.add_argument('var', nargs='*',
                         help='list of variables to plot')
