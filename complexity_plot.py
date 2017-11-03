@@ -47,7 +47,15 @@ def load_files(filenames):
 def main(args):
     ydata, xlabel = load_files(args.filenames)
 
-    x = sorted(ydata.keys())
+    x = np.array(sorted(ydata.keys()))
+
+    if args.xmin is not None:
+        xmin = float(args.xmin)
+        x = x[x >= xmin]
+    if args.xmax is not None:
+        xmax = float(args.xmax)
+        x = x[x <= xmax]
+
     y = [ydata[xi] for xi in x]
 
     mean = np.array([np.mean(yi) for yi in y])
@@ -111,6 +119,8 @@ if __name__ == '__main__':
                         help='what to plot [mean|std|max|scatter] (default: %(default)s)')
     parser.add_argument('-t', '--title')
     parser.add_argument('--style', default=None)
+    parser.add_argument('-x0', '--xmin', type=float)
+    parser.add_argument('-x1', '--xmax', type=float)
     parser.add_argument('filenames', metavar='FILE', nargs='+',
                         help='pickle file from complexity_analysis.py')
 
