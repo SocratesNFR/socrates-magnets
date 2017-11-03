@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import pickle
 from collections import defaultdict
 
-plt.style.use('ggplot')
-
 def load_files(filenames):
     xlabel = None
     y = defaultdict(list)
@@ -60,8 +58,15 @@ def main(args):
     for i in range(len(mean)):
         print("  {:.3f}: mean={:.2f} std={:.2f} #runs={}".format(x[i], mean[i], std[i], len(y[i])))
 
-    title = " + ".join(map(os.path.basename, args.filenames))
-    plt.suptitle(title)
+    if args.style:
+        plt.style.use(args.style)
+
+    if args.title is None:
+        title = " + ".join(map(os.path.basename, args.filenames))
+    else:
+        title = args.title
+
+    plt.title(title)
 
     line_color = None
 
@@ -104,6 +109,8 @@ if __name__ == '__main__':
                         help='save plot to file')
     parser.add_argument('-p', '--plot', default='scatter,mean,std',
                         help='what to plot [mean|std|max|scatter] (default: %(default)s)')
+    parser.add_argument('-t', '--title')
+    parser.add_argument('--style', default=None)
     parser.add_argument('filenames', metavar='FILE', nargs='+',
                         help='pickle file from complexity_analysis.py')
 
