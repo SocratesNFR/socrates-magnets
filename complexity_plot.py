@@ -39,6 +39,7 @@ def load_files(filenames):
         print("  Params: {}".format(keys))
 
         for x, v in zip(params, values):
+            x = np.round(x, 10)
             y[x].extend(v)
 
     return y, xlabel
