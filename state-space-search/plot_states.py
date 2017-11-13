@@ -34,7 +34,7 @@ def unique_states(data):
 def main(args):
     if args.load:
         data = np.loadtxt(args.load)
-        pst = data[:,0]
+        pst = data[:,0] * 100
         n_states = data[:,1]
     else:
         n_states = []
@@ -47,18 +47,20 @@ def main(args):
         pst = np.arange(0, len(n_states)) / 100
 
 
-    plt.title("State space search: si3x3")
+    if args.style:
+        plt.style.use(args.style)
+
+    plt.title("State space search")
     plt.plot(pst, n_states, 'o-')
-    plt.xlabel("Msat_r1 pst")
-    plt.ylabel("#states")
-    plt.xlim(pst[0] - 0.01, pst[-1] + 0.01)
+    plt.xlabel("Local perturbation (\%) ")
+    plt.ylabel("Number of states")
 
     if args.dump:
         data = np.vstack([pst, n_states]).T
         np.savetxt(args.dump, data, fmt=('%.4f', '%d'), header='pst, n_states')
 
     if args.output:
-        plt.savefig(args.output, dpi=100)
+        plt.savefig(args.output)
     else:
         plt.show()
 
@@ -70,6 +72,7 @@ if __name__ == '__main__':
                         help='save plot to file')
     parser.add_argument('--dump', metavar='FILE', help='Save result to csv')
     parser.add_argument('--load', metavar='FILE', help='Load result from csv')
+    parser.add_argument('--style', default=None)
     # parser.add_argument('edgelist', nargs='+', metavar='FILE',
                         # help='edgelists')
 
