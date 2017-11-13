@@ -5,8 +5,6 @@ import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 
-plt.style.use('ggplot')
-
 edgelists = [
         "si3x3-0pst-edgelist.txt",
         "si3x3-1pst-edgelist.txt",

@@ -5,8 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mx3util import parse_table_header, load_table
 
-plt.style.use('ggplot')
-
 def main(args):
     # get header
     headers, _ = parse_table_header(args.filename)
