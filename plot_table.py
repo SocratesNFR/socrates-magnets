@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-import re
+import fnmatch
 import numpy as np
 import matplotlib.pyplot as plt
 from mx3util import parse_table_header, load_table
@@ -28,7 +28,11 @@ def main(args):
                 variables.append(v + "y")
                 variables.append(v + "z")
             else:
-                raise IndexError(v)
+                matches = fnmatch.filter(headers, v)
+                if matches:
+                    variables.extend(matches)
+                else:
+                    raise IndexError(v)
     else:
         variables = headers
 
