@@ -5,7 +5,7 @@ import time
 import datetime
 import argparse
 import numpy as np
-from mx3util import gen_job, run_local, run_dist, StoreKeyValue, Template
+from mx3util import gen_job, run_local, run_dist, StoreKeyValue
 
 
 def bit_array(x, n_bits):
@@ -37,7 +37,7 @@ class StateSpaceSearch(object):
             self.ngpus = 1
 
         self.template = template
-        self.tpl = Template(template, params)
+        self.params = params
         self.outdir = outdir
 
         root, ext = os.path.splitext(os.path.basename(template))
@@ -52,14 +52,14 @@ class StateSpaceSearch(object):
         filename = self.get_outfile(config)
         filename = os.path.join(self.outdir, filename)
 
-        params = {}
+        params = dict(self.params) # copy
         config_array = bit_array(config, 12)
 
         for i, bit in enumerate(config_array):
             k = "mi{}".format(i+1)
             params[k] = -1 + bit * 2
 
-        self.tpl.write(filename, **params)
+        gen_job(self.template, filename, **params)
 
         return filename
 

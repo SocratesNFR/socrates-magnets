@@ -1,4 +1,4 @@
-SetGridsize({sizex}, {sizey}, 1)
+SetGridsize({{sizex}}, {{sizey}}, 1)
 SetCellsize(500e-9/128, 125e-9/32, 3e-9)
 
 Msat  = 800e3

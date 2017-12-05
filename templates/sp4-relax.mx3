@@ -5,7 +5,7 @@ Msat  = 800e3
 Aex   = 13e-12
 alpha = 0.02
 
-m = uniform({mx}, {my}, {mz})
+m = uniform({{mx}}, {{my}}, {{mz}})
 snapshot(m)
 
 relax()

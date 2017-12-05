@@ -4,37 +4,31 @@ import os
 import argparse
 import re
 import numpy as np
+from jinja2 import Environment, FileSystemLoader
 try:
     from subprocess import DEVNULL
 except ImportError:
     DEVNULL = open(os.devnull, 'w')
 
-class Template(object):
-    def __init__(self, template, params={}):
-        self.template = template
-        self.params = dict(params)
+TEMPLATES_PATH = ['templates', '.']
+DEFAULT_JOB_SCRIPT_TEMPLATE = 'mumax3.pbs.sh'
 
-    def generate(self, **kwargs):
-        tpl = open(self.template).read()
 
-        params = copy.deepcopy(self.params)
-        params.update(kwargs)
-
-        mx3 = tpl.format(**params)
-
-        return mx3
-
-    def write(self, filename, **kwargs):
-        mx3 = self.generate(**kwargs)
-        with open(filename, 'w') as f:
-            f.write(mx3)
+def get_template(template):
+    loader = FileSystemLoader(TEMPLATES_PATH)
+    env = Environment(loader=loader)
+    return env.get_template(template)
 
 def gen_job(template, outfile, **params):
-    tpl = Template(template, params)
-    tpl.write(outfile)
+    tpl = get_template(template)
+    mx3 = tpl.render(**params)
+    with open(outfile, 'w') as f:
+        f.write(mx3)
 
-def run_local(jobs, wait=True, quiet=False):
+def run_local(jobs, wait=True, quiet=False, interactive=False):
     cmd = ['mumax3']
+    if interactive:
+        cmd.append('-i')
     # mumax3 can handle and queue multiple jobs
     cmd.extend(jobs)
     if quiet:
@@ -46,10 +40,6 @@ def run_local(jobs, wait=True, quiet=False):
         p.wait()
 
     return p
-
-DEFAULT_JOB_SCRIPT_TEMPLATE = os.path.join(
-        os.path.dirname(__file__),
-        "templates/mumax3.pbs.sh")
 
 def run_dist(jobs, wait=True, job_script_template=DEFAULT_JOB_SCRIPT_TEMPLATE):
     #
@@ -65,8 +55,7 @@ def run_dist(jobs, wait=True, job_script_template=DEFAULT_JOB_SCRIPT_TEMPLATE):
     job_script = os.path.join(job_script_dir, job_script_name)
     jobs_param = " ".join(jobs)
 
-    tpl = Template(job_script_template)
-    tpl.write(job_script, jobs=jobs_param, job_script_dir=job_script_dir)
+    gen_job(job_script_template, job_script, jobs=jobs_param, job_script_dir=job_script_dir)
 
     #
     # Submit job

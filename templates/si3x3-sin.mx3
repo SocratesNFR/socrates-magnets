@@ -4,7 +4,7 @@ Aex     = 2 * 13e-12 // 2x times usual
 alpha   = 0.01
 
 // Setting different material parameters in one region to introduce disorder
-Msat_r1 := 860e3 * (1.0 - {pst})
+Msat_r1 := 860e3 * (1.0 - {{pst}})
 Msat.SetRegion(1, Msat_r1)
 
 // Initial magnetization
@@ -22,9 +22,9 @@ mi11 := uniform(0, 1, 0)
 mi12 := uniform(0, 1, 0)
 
 // External field
-B := {B}                            //the magnitude of the applied field
-f := {f} // frequency
-periods := {periods}
+B := {{B}}                            //the magnitude of the applied field
+f := {{f}} // frequency
+periods := {{periods}}
 
 // Output format
 OutputFormat = OVF1_TEXT 
