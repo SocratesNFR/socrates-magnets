@@ -2,30 +2,61 @@
 import os
 import time
 import argparse
-from mx3util import gen_job, run_local, run_dist, StoreKeyValue
+import re
+import itertools
+import pickle
 import numpy as np
+from mx3util import gen_job, run_local, run_dist, StoreKeyValue
 
 n_gpus_dist = 2
 
-def params_iter():
-    # for f in np.linspace(1e9, 1e8, 10):
-        # yield {'B': 83e-3, 'f': f, 'pst': '0.0', 'periods': 10}
-    for B in np.linspace(0e-3, 100e-3, 11):
-    # for B in np.arange(70e-3, 90e-3, 1e-3):
-        yield {'B': B, 'f': 1e8, 'pst': '0.0', 'periods': 10}
+def parse_sweep_spec(spec):
+    # start:stop:step = arange
+    if ':' in spec:
+        m = re.match('(.*):(.*):(.*)', spec)
+        if not m:
+            raise ValueError("Expected start:stop:step for arange")
+        start, stop, step = map(float, m.groups())
+        return np.arange(start, stop, step)
+
+    # [start,stop,num] = linspace
+    if spec.startswith('['):
+        m = re.match('\[(.*),(.*),(.*)\]', spec)
+        if not m:
+            raise ValueError("Expected [start,stop,num] for linspace")
+        start, stop, num = map(float, m.groups())
+        return np.linspace(start, stop, num)
+
+    # a,b,c,... = list
+    if ',' in spec:
+        values = re.split(',', spec)
+        return values
+
+    raise ValueError("Invalid sweep spec", spec)
+
 
 def main(args):
     queue = []
 
+    sweep_spec = []
+    for k, v in args.sweep.items():
+        sweep_spec.append([(k, vi) for vi in parse_sweep_spec(v)])
+    # print(sweep_spec)
+    sweep_list = list(itertools.product(*sweep_spec))
+
     base, ext = os.path.splitext(os.path.basename(args.template))
 
-    for i, params in enumerate(params_iter()):
+    for i, sweep_params in enumerate(sweep_list):
+        params = dict(args.param)
+        params.update(sweep_params)
+        print("{:03d}: {}".format(i, params))
         for j in range(args.repeat):
             if args.repeat > 1:
                 outfile = "{}.{:03d}.{:03d}{}".format(base, i, j, ext)
             else:
                 outfile = "{}.{:03d}{}".format(base, i, ext)
             out = os.path.join(args.outdir, outfile)
+            print(out)
             gen_job(args.template, out, **params)
             queue.append(out)
 
@@ -47,10 +78,12 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run mx3 job')
-    parser.add_argument('-r', '--run', choices=['local', 'dist'], default='local',
+    parser.add_argument('-r', '--run', choices=['local', 'dist', 'none'], default='local',
                         help='run locally or distributed on a cluster')
-    parser.add_argument('-p', '--param', action=StoreKeyValue,
+    parser.add_argument('-p', '--param', action=StoreKeyValue, default={},
                         help='set template parameter key=value')
+    parser.add_argument('-s', '--sweep', action=StoreKeyValue, required=True,
+                        help='set sweep parameter key=SPEC')
     parser.add_argument('-n', '--repeat', type=int, default=1, metavar='N',
                         help='repeat each experiment N times (default: %(default)s)')
     parser.add_argument('template', help='job template')
