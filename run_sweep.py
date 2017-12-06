@@ -48,22 +48,27 @@ def main(args):
 
     info = []
 
+    if os.path.exists(args.outdir):
+        print("WARNING: Path exists: {}".format(args.outdir))
+    else:
+        os.makedirs(args.outdir)
+
     for i, sweep_params in enumerate(sweep_list):
         params = dict(args.param)
         params.update(sweep_params)
         info.append([])
-        print("{:03d}: {}".format(i, params))
         for j in range(args.repeat):
             if args.repeat > 1:
                 outfile = "{}.{:03d}.{:03d}{}".format(base, i, j, ext)
             else:
                 outfile = "{}.{:03d}{}".format(base, i, ext)
             out = os.path.join(args.outdir, outfile)
-            print(out)
             gen_job(args.template, out, **params)
             queue.append(out)
             d = {'params': params, 'filename': outfile}
             info[-1].append(d)
+
+    print("Generated {} jobs in {}".format(len(sweep_list), args.outdir))
 
     info_filename = os.path.join(args.outdir, 'run_info.pickle')
     run_info = {
