@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mx3util import parse_table_header, load_table
 
+line_highlight = False
+
 def main(args):
     # get header
     headers, _ = parse_table_header(args.filename)
@@ -48,13 +50,17 @@ def main(args):
     axes = axes.flatten()
 
     t = data[t0:t1,0] # first is always time
+    lines = []
+    dlines = []
     for i, v in enumerate(variables[1:], start=1):
         d = data[t0:t1,i]
         line, = axes[0].plot(t, d, label=v)
+        lines.append(line)
 
+        dlines.append(None)
         if args.digitize:
             dd = np.where(d > 0, 1, 0)
-            axes[1].plot(t, dd - 1.1*(i - 1), color=line.get_color())
+            dlines[-1], = axes[1].plot(t, dd - 1.1*(i - 1), color=line.get_color())
 
 
     # Shrink current axis by 10%
@@ -63,12 +69,41 @@ def main(args):
         ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
 
     fig.suptitle(args.filename)
-    axes[0].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
+    leg = axes[0].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
     axes[0].set_xlim(t[0], t[-1])
 
     axes[-1].set_xlabel("t")
     if args.digitize:
         axes[1].get_yaxis().set_visible(False)
+
+    artist_group = []
+    for line, dline, legline, legtext in zip(lines, dlines, leg.get_lines(), leg.get_texts()):
+        #line.set_picker(5) # 5 pts tolerance
+        legline.set_picker(5)
+        legtext.set_picker(5)
+
+        group = [line, legline, legtext]
+        if dline:
+            group.append(dline)
+
+        artist_group.append(group)
+
+    def onpick(event):
+        global line_highlight
+        line_highlight = not line_highlight
+        artist = event.artist
+        alpha = 1.0
+        if line_highlight:
+            alpha = 0.1
+
+        for g in artist_group:
+            if line_highlight and artist in g:
+                continue
+            for a in g:
+                a.set_alpha(alpha)
+        fig.canvas.draw()
+
+    fig.canvas.mpl_connect('pick_event', onpick)
 
     if args.output:
         plt.savefig(args.output)
