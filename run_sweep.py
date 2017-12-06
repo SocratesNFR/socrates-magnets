@@ -46,9 +46,12 @@ def main(args):
 
     base, ext = os.path.splitext(os.path.basename(args.template))
 
+    info = []
+
     for i, sweep_params in enumerate(sweep_list):
         params = dict(args.param)
         params.update(sweep_params)
+        info.append([])
         print("{:03d}: {}".format(i, params))
         for j in range(args.repeat):
             if args.repeat > 1:
@@ -59,6 +62,19 @@ def main(args):
             print(out)
             gen_job(args.template, out, **params)
             queue.append(out)
+            d = {'params': params, 'filename': outfile}
+            info[-1].append(d)
+
+    info_filename = os.path.join(args.outdir, 'run_info.pickle')
+    run_info = {
+        'type': 'sweep',
+        'args': args,
+        'sweep_spec': sweep_spec,
+        'sweep_list': sweep_list,
+        'run_info': info
+    }
+    with open(info_filename, 'wb') as f:
+        pickle.dump(run_info, f)
 
     if args.run == 'local':
         run_local(queue)
