@@ -20,6 +20,10 @@ B := {{B|default('1.0')}}  // magnitude (T)
 f := {{f|default('100e6')}} // frequency (Hz)
 periods := {{periods|default('1')}} // number of periods
 
+// Sampling
+spp := {{spp|default('1000')}} // samples per period
+fpp := {{fpp|default('100')}}  // frames per period (autosnapshot)
+
 // Output format
 OutputFormat = OVF1_TEXT
 
@@ -133,9 +137,9 @@ snapshot(m)
 // Set external field
 B_ext = vector(B*cos(2*pi*f*t), 0, 0)
 
-tableautosave((1/f)/1000)  // 1000 samples per period
-autosnapshot(m, (1/f)/100) // 100 frames per period
-//autosave(m, (1/f)/100)     // 100 frames per period
+tableautosave((1/f)/spp)
+autosnapshot(m, (1/f)/fpp)
+//autosave(m, (1/f)/fpp)
 
 run(periods/f)
 //run(1e-9)
