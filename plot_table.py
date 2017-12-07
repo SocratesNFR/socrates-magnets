@@ -18,10 +18,10 @@ def main(args):
             print("    {}".format(", ".join(headers[i:i+3])))
         return
 
-    data = np.loadtxt(args.filename)
+    assert args.x in headers, "Unknown variable '{}'".format(args.x)
+    variables = [args.x]
 
     if args.var:
-        variables = ['t']
         for v in args.var:
             if v in headers:
                 variables.append(v)
@@ -36,11 +36,12 @@ def main(args):
                 else:
                     raise IndexError(v)
     else:
-        variables = headers
+        variables.extend(filter(lambda v: v != args.x, headers))
 
     data = load_table(args.filename, variables)
     t0 = args.t0
     t1 = args.t1
+    xlabel = args.x
 
     n_rows = 1
     if args.digitize:
@@ -49,18 +50,18 @@ def main(args):
     axes = np.atleast_1d(axes)
     axes = axes.flatten()
 
-    t = data[t0:t1,0] # first is always time
+    x = data[t0:t1,0]
     lines = []
     dlines = []
     for i, v in enumerate(variables[1:], start=1):
         d = data[t0:t1,i]
-        line, = axes[0].plot(t, d, label=v)
+        line, = axes[0].plot(x, d, label=v)
         lines.append(line)
 
         dlines.append(None)
         if args.digitize:
             dd = np.where(d > 0, 1, 0)
-            dlines[-1], = axes[1].plot(t, dd - 1.1*(i - 1), color=line.get_color())
+            dlines[-1], = axes[1].plot(x, dd - 1.1*(i - 1), color=line.get_color())
 
 
     # Shrink current axis by 10%
@@ -70,9 +71,8 @@ def main(args):
 
     fig.suptitle(args.filename)
     leg = axes[0].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
-    axes[0].set_xlim(t[0], t[-1])
 
-    axes[-1].set_xlabel("t")
+    axes[-1].set_xlabel(xlabel)
     if args.digitize:
         axes[1].get_yaxis().set_visible(False)
 
@@ -125,6 +125,8 @@ if __name__ == '__main__':
                         help='start at sample')
     parser.add_argument('-t1', type=int, default=None,
                         help='stop at sample')
+    parser.add_argument('-x', default='t',
+                        help='x axis variable')
     parser.add_argument('var', nargs='*',
                         help='list of variables to plot')
 
