@@ -1,0 +1,145 @@
+//
+// Square spin ice, fixed size
+//
+
+// Material parameters
+Msat    = {{Msat|default('860e3')}}
+Aex     = {{Aex|default('2 * 13e-12')}}
+alpha   = {{alpha|default('0.01')}}
+
+// Number of horizontal and vertical magnets
+n_horiz := {{n_horiz|default('4')}}
+n_vert  := {{n_vert|default('4')}}
+
+// Width and height of magnets (m)
+nw := {{nw|default('120e-9')}}
+nh := {{nh|default('40e-9')}}
+
+// External field
+B := {{B|default('1.0')}}  // magnitude (T)
+f := {{f|default('100e6')}} // frequency (Hz)
+periods := {{peroids|default('1')}} // number of periods
+
+// Output format
+OutputFormat = OVF1_TEXT
+
+// Set up grid
+// TODO: parameterize
+SetMesh(256, 256, 1, 10e-09, 10e-09, 15e-09, 0, 0, 0)
+
+// Add B_ext first
+tableAdd(B_ext)
+
+// Start with an empty region
+// TODO: this is a hack, any better way?
+islands := square(1e-9).sub(square(1e-9))
+
+width := n_horiz * nw + (n_horiz + 1) * nh
+height := n_vert * nw + (n_vert + 1) * nh
+
+// Define horizontal nanomagnets: odd region index
+r := 1
+xs := -(n_horiz * nw + (n_horiz - 1) * nh) / 2 + nw/2
+ys := -(n_vert * nw + (n_vert - 1) * nh) / 2 - nh/2
+y := ys
+for j := 0; j < n_vert + 1; j++ {
+    x := xs
+    for i := 0; i < n_horiz; i++ {
+        //dx := nw/2 + nh + i * (nw + nh)
+        //dy := nh/2 + j * (nw + nh)
+        //dy := 0
+
+        island := rect(nw, nh).transl(x, y, 0)
+        islands = islands.add(island)
+
+        x += nw + nh
+
+        print("horiz (", j, ",", i, ") r", r, "x", x, "y", y)
+        defregion(r, island)
+        tableAdd(m.Region(r))
+        r += 2
+    }
+
+    y += nw + nh
+}
+
+// Define vertical nanomagnets: even region index
+r = 2
+xs = -(n_horiz * nw + (n_horiz - 1) * nh) / 2 - nh/2
+ys = -(n_vert * nw + (n_vert - 1) * nh) / 2 + nw/2
+y = ys
+for j := 0; j < n_vert; j++ {
+    x := xs
+    for i := 0; i < n_horiz + 1; i++ {
+        //dx := nh/2 + i * (nw + nh)
+        //dy := nw/2 + nh + j * (nw + nh)
+
+        island := rect(nh, nw).transl(x, y, 0)
+        islands = islands.add(island)
+
+        x += nw + nh
+
+        print("vert (", j, ",", i, ") r", r, "x", x, "y", y)
+        defregion(r, island)
+        tableAdd(m.Region(r))
+        r += 2
+    }
+
+    y += nw + nh
+}
+
+setGeom(islands)
+
+// Set initial magnetization in each nanomagnet
+//m = randomMagSeed(now().nanosecond())
+m = uniform(1,0,0)
+//m.loadfile("gen/si-square-fixed.out/m000000.ovf")
+
+//relax()
+//save(m)
+
+/*
+cw := 2*nw + nh
+
+reg := square(cw)
+//reg = reg.transl(-1*(cw+nh), -1*(cw+nh), 0)
+defregion(r, reg)
+m.setregion(r, uniform(1, 1, 0))
+*/
+
+/*
+reg := circle(1000e-9)
+reg = reg.transl(500e-9, 500e-9, 0)
+defregion(r, reg)
+//m.setregion(r, uniform(0, -1, 0))
+
+B_ext.setregion(r, vector(B*cos(2*pi*f*t), B*sin(2*pi*f*t), 0))
+
+r++
+*/
+
+/*
+reg = reg.transl(2*(cw+nh), 2*(cw+nh), 0)
+defregion(r, reg)
+m.setregion(r, uniform(0, -1, 0))
+r++
+*/
+
+time_start := now()
+
+//relax()
+snapshot(m)
+
+// Set external field
+B_ext = vector(B*cos(2*pi*f*t), 0, 0)
+
+tableautosave((1/f)/1000)  // 1000 samples per period
+autosnapshot(m, (1/f)/100) // 100 frames per period
+//autosave(m, (1/f)/100)     // 100 frames per period
+
+run(periods/f)
+//run(1e-9)
+
+time_end := now()
+elapsed := time_end.Sub(time_start)
+print("Elapsed time: ", elapsed)
