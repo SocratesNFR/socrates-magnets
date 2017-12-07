@@ -18,7 +18,7 @@ nh := {{nh|default('40e-9')}}
 // External field
 B := {{B|default('1.0')}}  // magnitude (T)
 f := {{f|default('100e6')}} // frequency (Hz)
-periods := {{peroids|default('1')}} // number of periods
+periods := {{periods|default('1')}} // number of periods
 
 // Output format
 OutputFormat = OVF1_TEXT
