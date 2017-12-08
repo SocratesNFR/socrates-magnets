@@ -3,6 +3,7 @@ import subprocess
 import os
 import argparse
 import re
+import fnmatch
 import numpy as np
 from jinja2 import Environment, FileSystemLoader
 try:
@@ -101,3 +102,21 @@ def load_table(filename, columns=None):
             cols.append(vmap[v])
 
     return np.loadtxt(filename, usecols=cols)
+
+
+def match_vars(patterns, variables):
+    var = []
+    for v in patterns:
+        if v in variables:
+            var.append(v)
+        elif v + "x" in variables:
+            var.append(v + "x")
+            var.append(v + "y")
+            var.append(v + "z")
+        else:
+            matches = fnmatch.filter(variables, v)
+            if matches:
+                var.extend(matches)
+            else:
+                raise IndexError(v)
+    return var

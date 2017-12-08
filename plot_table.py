@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import sys
-import fnmatch
 import numpy as np
 import matplotlib.pyplot as plt
-from mx3util import parse_table_header, load_table
+from mx3util import parse_table_header, load_table, match_vars
 
 line_highlight = False
 
@@ -22,19 +21,8 @@ def main(args):
     variables = [args.x]
 
     if args.var:
-        for v in args.var:
-            if v in headers:
-                variables.append(v)
-            elif v + "x" in headers:
-                variables.append(v + "x")
-                variables.append(v + "y")
-                variables.append(v + "z")
-            else:
-                matches = fnmatch.filter(headers, v)
-                if matches:
-                    variables.extend(matches)
-                else:
-                    raise IndexError(v)
+        matches = match_vars(args.var, headers)
+        variables.extend(matches)
     else:
         variables.extend(filter(lambda v: v != args.x, headers))
 
