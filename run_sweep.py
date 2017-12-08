@@ -59,9 +59,9 @@ def main(args):
         info.append([])
         for j in range(args.repeat):
             if args.repeat > 1:
-                outfile = "{}.{:03d}.{:03d}{}".format(base, i, j, ext)
+                outfile = "{}.{:06d}.{:06d}{}".format(base, i, j, ext)
             else:
-                outfile = "{}.{:03d}{}".format(base, i, ext)
+                outfile = "{}.{:06d}{}".format(base, i, ext)
             out = os.path.join(args.outdir, outfile)
             gen_job(args.template, out, **params)
             queue.append(out)
