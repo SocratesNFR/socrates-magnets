@@ -57,6 +57,9 @@ def main(args):
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width * 0.9, box.height])
 
+    if args.ylim:
+        axes[0].set_ylim(args.ylim)
+
     fig.suptitle(args.filename)
     leg = axes[0].legend(loc='upper left', bbox_to_anchor=(1.0, 1.0))
 
@@ -115,6 +118,8 @@ if __name__ == '__main__':
                         help='stop at sample')
     parser.add_argument('-x', default='t',
                         help='x axis variable')
+    parser.add_argument('--ylim', nargs=2, type=float, metavar=('YMIN', 'YMAX'),
+                        help='set ylim')
     parser.add_argument('var', nargs='*',
                         help='list of variables to plot')
 

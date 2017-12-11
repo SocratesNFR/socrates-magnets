@@ -42,7 +42,7 @@ def load_bfd(mx3_filename, variables, spp=1000, skip=1):
 
     return PX
 
-def bfd_plot(bf_param, bf_range, bfd, ylabel="x", title=None, suptitle=None, **kwargs):
+def bfd_plot(bf_param, bf_range, bfd, ylabel="x", title=None, suptitle=None, ylim=None, **kwargs):
     plt.figure()
     if title:
         plt.title(title)
@@ -50,7 +50,8 @@ def bfd_plot(bf_param, bf_range, bfd, ylabel="x", title=None, suptitle=None, **k
         plt.suptitle(suptitle)
 
     plt.plot(bf_range, bfd, 'b.', markersize=1, **kwargs)
-    plt.xlim(bf_range[0], bf_range[-1])
+    if ylim:
+        plt.ylim(ylim)
     plt.xlabel(bf_param)
     plt.ylabel(ylabel)
 
@@ -99,7 +100,9 @@ def main(args):
     colors = cycle(plt.rcParams['axes.prop_cycle'].by_key()['color'])
 
     for i, bfd in enumerate(bfds):
-        bfd_plot(sweep_param, sweep_values, bfd, variables[i], variables[i], color=next(colors))
+        bfd_plot(sweep_param, sweep_values, bfd,
+                ylabel=variables[i], title=variables[i], ylim=args.ylim,
+                color=next(colors))
 
     if args.savefig:
         filename = args.savefig
@@ -125,6 +128,8 @@ if __name__ == '__main__':
             help='Samples per period')
     parser.add_argument('-k', '--skip', type=int, default=100,
             help='Periods to skip')
+    parser.add_argument('--ylim', nargs=2, type=float, default=(-1, 1),
+            metavar=('YMIN', 'YMAX'), help='set ylim (default: %(default)s)')
     parser.add_argument('-o', '--savefig',
             help='Save figure(s) to file')
 
