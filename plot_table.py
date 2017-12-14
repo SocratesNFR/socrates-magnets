@@ -26,10 +26,15 @@ def main(args):
     else:
         variables.extend(filter(lambda v: v != args.x, headers))
 
-    data = load_table(args.filename, variables)
     t0 = args.t0
     t1 = args.t1
+    data = load_table(args.filename, variables)
+    data = data[t0:t1]
+
     xlabel = args.x
+
+    if args.poincare:
+        data = data[::args.poincare]
 
     n_rows = 1
     if args.digitize:
@@ -38,11 +43,11 @@ def main(args):
     axes = np.atleast_1d(axes)
     axes = axes.flatten()
 
-    x = data[t0:t1,0]
+    x = data[:,0]
     lines = []
     dlines = []
     for i, v in enumerate(variables[1:], start=1):
-        d = data[t0:t1,i]
+        d = data[:,i]
         line, = axes[0].plot(x, d, label=v)
         lines.append(line)
 
@@ -120,6 +125,8 @@ if __name__ == '__main__':
                         help='x axis variable')
     parser.add_argument('--ylim', nargs=2, type=float, metavar=('YMIN', 'YMAX'),
                         help='set ylim')
+    parser.add_argument('-p', '--poincare', type=int, metavar='N',
+                        help='apply poincare map (plot every N samples)')
     parser.add_argument('var', nargs='*',
                         help='list of variables to plot')
 
