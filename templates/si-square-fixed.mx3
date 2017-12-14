@@ -132,14 +132,19 @@ r++
 time_start := now()
 
 //relax()
-snapshot(m)
+//snapshot(m)
 
 // Set external field
 B_ext = vector(B*cos(2*pi*f*t), 0, 0)
 
-tableautosave((1/f)/spp)
-autosnapshot(m, (1/f)/fpp)
-//autosave(m, (1/f)/fpp)
+if spp > 0 {
+    tableautosave((1/f)/spp)
+}
+
+if fpp > 0 {
+    autosnapshot(m, (1/f)/fpp)
+    //autosave(m, (1/f)/fpp)
+}
 
 run(periods/f)
 //run(1e-9)
