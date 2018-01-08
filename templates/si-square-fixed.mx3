@@ -17,8 +17,10 @@ nh := {{nh|default('40e-9')}}
 
 // External field
 B := {{B|default('1.0')}}  // magnitude (T)
+phi := {{phi|default('0.0')}} // angle (deg)
 f := {{f|default('100e6')}} // frequency (Hz)
 periods := {{periods|default('1')}} // number of periods
+rad := phi * pi / 180
 
 // Sampling
 spp := {{spp|default('1000')}} // samples per period
@@ -96,10 +98,11 @@ setGeom(islands)
 
 // Set initial magnetization in each nanomagnet
 //m = randomMagSeed(now().nanosecond())
-m = uniform(1,0,0)
+//m = uniform(1,0,0)
 //m.loadfile("gen/si-square-fixed.out/m000000.ovf")
+B_ext = vector(B * cos(rad), B * sin(rad), 0)
 
-//relax()
+relax()
 //save(m)
 
 /*
@@ -135,7 +138,7 @@ time_start := now()
 //snapshot(m)
 
 // Set external field
-B_ext = vector(B*cos(2*pi*f*t), 0, 0)
+B_ext = vector(B * cos(2*pi*f*t) * cos(rad), B * cos(2*pi*f*t) * sin(rad), 0)
 
 if spp > 0 {
     tableautosave((1/f)/spp)
