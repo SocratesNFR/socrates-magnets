@@ -98,9 +98,11 @@ setGeom(islands)
 
 // Set initial magnetization in each nanomagnet
 //m = randomMagSeed(now().nanosecond())
-//m = uniform(1,0,0)
+//m = uniform(1,1,0)
+//m = uniform(B * cos(rad), B * sin(rad), 0)
+m = uniform(cos(rad), sin(rad), 0) // polarizing field
 //m.loadfile("gen/si-square-fixed.out/m000000.ovf")
-B_ext = vector(B * cos(rad), B * sin(rad), 0)
+//B_ext = vector(B * cos(rad), B * sin(rad), 0)
 
 relax()
 //save(m)
