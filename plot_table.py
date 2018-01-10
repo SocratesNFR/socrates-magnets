@@ -1,10 +1,39 @@
 #!/usr/bin/env python3
 import sys
+import re
 import numpy as np
+from numpy.linalg import norm
 import matplotlib.pyplot as plt
 from mx3util import parse_table_header, load_table, match_vars
 
 line_highlight = False
+
+def func_norm(x):
+    if np.all(x[:,1] == 0):
+        d = x[:,0] # x direction
+    else:
+        d = x[:,1] # y direction
+    return (norm(x, axis=1) * np.where(d >= 0, 1, -1)).reshape((-1, 1))
+
+def func_atan(x):
+    return np.rad2deg(np.arctan(x[:,1] / x[:,0])).reshape((-1, 1))
+
+funcs = {
+    'norm': func_norm,
+    'atan': func_atan
+}
+
+def parse_var(var, headers):
+    m = re.match(r'(\w+)\((.*)\)', var)
+    if m:
+        fn = funcs[m.group(1)]
+        v = list(map(str.strip, m.group(2).split(',')))
+        v = tuple(match_vars(v, headers))
+        yield (var, fn) + v
+
+    else:
+        for v in match_vars([var], headers):
+            yield (v, None, v)
 
 def main(args):
     # get header
@@ -17,14 +46,17 @@ def main(args):
             print("    {}".format(", ".join(headers[i:i+3])))
         return
 
-    assert args.x in headers, "Unknown variable '{}'".format(args.x)
-    variables = [args.x]
+    # assert args.x in headers, "Unknown variable '{}'".format(args.x)
+    varmap = list(parse_var(args.x, headers))
 
     if args.var:
-        matches = match_vars(args.var, headers)
-        variables.extend(matches)
+        for v in args.var:
+            varmap.extend(list(parse_var(v, headers)))
     else:
-        variables.extend(filter(lambda v: v != args.x, headers))
+        varmap.extend((var, None, var) for var in headers if var != args.x)
+
+    # flatten
+    variables = [v for var in varmap for v in var[2:]]
 
     t0 = args.t0
     t1 = args.t1
@@ -36,6 +68,22 @@ def main(args):
     if args.poincare:
         data = data[::args.poincare]
 
+    # Apply funcs
+    data2 = []
+    i = 0
+    for var in varmap:
+        fn = var[1]
+        count = len(var[2:])
+        d = data[:,i:i+count]
+        if fn:
+            d = fn(d)
+        else:
+            assert d.shape[1] == 1
+        data2.append(d)
+        i += count
+
+    data2 = np.concatenate(data2, axis=1)
+
     n_rows = 1
     if args.digitize:
         n_rows += 1
@@ -43,12 +91,13 @@ def main(args):
     axes = np.atleast_1d(axes)
     axes = axes.flatten()
 
-    x = data[:,0]
+    x = data2[:,0]
     lines = []
     dlines = []
-    for i, v in enumerate(variables[1:], start=1):
-        d = data[:,i]
-        line, = axes[0].plot(x, d, label=v)
+    for i, var in enumerate(varmap[1:], start=1):
+        d = data2[:,i]
+        label = var[0]
+        line, = axes[0].plot(x, d, label=label)
         lines.append(line)
 
         dlines.append(None)
