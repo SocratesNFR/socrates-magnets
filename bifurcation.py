@@ -126,7 +126,7 @@ if __name__ == '__main__':
                         help='list of variables to plot')
     parser.add_argument('-s', '--spp', type=int, default=1000,
             help='Samples per period')
-    parser.add_argument('-k', '--skip', type=int, default=100,
+    parser.add_argument('-k', '--skip', type=float, default=100,
             help='Periods to skip')
     parser.add_argument('--ylim', nargs=2, type=float, default=(-1, 1),
             metavar=('YMIN', 'YMAX'), help='set ylim (default: %(default)s)')
