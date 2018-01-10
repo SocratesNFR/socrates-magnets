@@ -1,0 +1,34 @@
+//
+// Square spin ice, common parameters
+//
+
+// Material parameters
+Msat    = {{Msat|default('860e3')}}
+Aex     = {{Aex|default('2 * 13e-12')}}
+alpha   = {{alpha|default('0.01')}}
+
+// Width and height of magnets (m)
+nw := {{nw|default('220e-9')}}
+nh := {{nh|default('80e-9')}}
+
+// External field
+B := {{B|default('1.0')}}  // magnitude (T)
+phi := {{phi|default('0.0')}} // angle (deg)
+f := {{f|default('100e6')}} // frequency (Hz)
+periods := {{periods|default('1')}} // number of periods
+rad := phi * pi / 180
+
+// Sampling
+spp := {{spp|default('1000')}} // samples per period
+fpp := {{fpp|default('100')}}  // frames per period (autosnapshot)
+
+// Output format
+OutputFormat = OVF1_TEXT
+
+// Set up grid
+// TODO: parameterize
+SetMesh(256, 256, 1, 10e-09, 10e-09, 15e-09, 0, 0, 0)
+
+// Add B_ext first
+tableAdd(B_ext)
+

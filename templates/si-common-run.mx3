@@ -1,0 +1,39 @@
+//
+// Square spin ice, common run procedure
+//
+
+// Set initial magnetization in each nanomagnet
+//m = randomMagSeed(now().nanosecond())
+//m = uniform(1,1,0)
+//m = uniform(B * cos(rad), B * sin(rad), 0)
+m = uniform(cos(rad), sin(rad), 0) // polarizing field
+//m.loadfile("gen/si-square-fixed.out/m000000.ovf")
+//B_ext = vector(B * cos(rad), B * sin(rad), 0)
+
+relax()
+//save(m)
+
+time_start := now()
+
+//relax()
+//snapshot(m)
+
+// Set external field
+B_ext = vector(B * sin(2*pi*f*t) * cos(rad), B * sin(2*pi*f*t) * sin(rad), 0)
+
+if spp > 0 {
+    tableautosave((1/f)/spp)
+}
+
+if fpp > 0 {
+    autosnapshot(m, (1/f)/fpp)
+    //autosave(m, (1/f)/fpp)
+}
+
+run(periods/f)
+//run(1e-9)
+
+time_end := now()
+elapsed := time_end.Sub(time_start)
+print("Elapsed time: ", elapsed)
+

@@ -2,39 +2,11 @@
 // Square spin ice, fixed size
 //
 
-// Material parameters
-Msat    = {{Msat|default('860e3')}}
-Aex     = {{Aex|default('2 * 13e-12')}}
-alpha   = {{alpha|default('0.01')}}
+{% include 'si-common-params.mx3' %}
 
 // Number of horizontal and vertical magnets
 n_horiz := {{n_horiz|default('4')}}
 n_vert  := {{n_vert|default('4')}}
-
-// Width and height of magnets (m)
-nw := {{nw|default('120e-9')}}
-nh := {{nh|default('40e-9')}}
-
-// External field
-B := {{B|default('1.0')}}  // magnitude (T)
-phi := {{phi|default('0.0')}} // angle (deg)
-f := {{f|default('100e6')}} // frequency (Hz)
-periods := {{periods|default('1')}} // number of periods
-rad := phi * pi / 180
-
-// Sampling
-spp := {{spp|default('1000')}} // samples per period
-fpp := {{fpp|default('100')}}  // frames per period (autosnapshot)
-
-// Output format
-OutputFormat = OVF1_TEXT
-
-// Set up grid
-// TODO: parameterize
-SetMesh(256, 256, 1, 10e-09, 10e-09, 15e-09, 0, 0, 0)
-
-// Add B_ext first
-tableAdd(B_ext)
 
 // Start with an empty region
 // TODO: this is a hack, any better way?
@@ -96,64 +68,4 @@ for j := 0; j < n_vert; j++ {
 
 setGeom(islands)
 
-// Set initial magnetization in each nanomagnet
-//m = randomMagSeed(now().nanosecond())
-//m = uniform(1,1,0)
-//m = uniform(B * cos(rad), B * sin(rad), 0)
-m = uniform(cos(rad), sin(rad), 0) // polarizing field
-//m.loadfile("gen/si-square-fixed.out/m000000.ovf")
-//B_ext = vector(B * cos(rad), B * sin(rad), 0)
-
-relax()
-//save(m)
-
-/*
-cw := 2*nw + nh
-
-reg := square(cw)
-//reg = reg.transl(-1*(cw+nh), -1*(cw+nh), 0)
-defregion(r, reg)
-m.setregion(r, uniform(1, 1, 0))
-*/
-
-/*
-reg := circle(1000e-9)
-reg = reg.transl(500e-9, 500e-9, 0)
-defregion(r, reg)
-//m.setregion(r, uniform(0, -1, 0))
-
-B_ext.setregion(r, vector(B*cos(2*pi*f*t), B*sin(2*pi*f*t), 0))
-
-r++
-*/
-
-/*
-reg = reg.transl(2*(cw+nh), 2*(cw+nh), 0)
-defregion(r, reg)
-m.setregion(r, uniform(0, -1, 0))
-r++
-*/
-
-time_start := now()
-
-//relax()
-//snapshot(m)
-
-// Set external field
-B_ext = vector(B * sin(2*pi*f*t) * cos(rad), B * sin(2*pi*f*t) * sin(rad), 0)
-
-if spp > 0 {
-    tableautosave((1/f)/spp)
-}
-
-if fpp > 0 {
-    autosnapshot(m, (1/f)/fpp)
-    //autosave(m, (1/f)/fpp)
-}
-
-run(periods/f)
-//run(1e-9)
-
-time_end := now()
-elapsed := time_end.Sub(time_start)
-print("Elapsed time: ", elapsed)
+{% include 'si-common-run.mx3' %}

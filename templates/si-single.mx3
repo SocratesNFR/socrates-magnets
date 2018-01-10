@@ -1,0 +1,10 @@
+//
+// Square spin ice, single horizontal magnet
+//
+
+{% include 'si-common-params.mx3' %}
+
+island := rect(nw, nh)
+setGeom(island)
+
+{% include 'si-common-run.mx3' %}
