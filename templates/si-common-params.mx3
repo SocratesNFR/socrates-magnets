@@ -10,7 +10,7 @@ alpha   = {{alpha|default('0.01')}}
 // Size magnets (m)
 nw := {{nw|default('220e-9')}} // width
 nh := {{nh|default('80e-9')}}  // height
-nt := {{nt|detault('25e-9')}}  // thickness
+nt := {{nt|default('25e-9')}}  // thickness
 
 // External field
 B := {{B|default('1.0')}}  // magnitude (T)
