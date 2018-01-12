@@ -7,9 +7,10 @@ Msat    = {{Msat|default('860e3')}}
 Aex     = {{Aex|default('2 * 13e-12')}}
 alpha   = {{alpha|default('0.01')}}
 
-// Width and height of magnets (m)
-nw := {{nw|default('220e-9')}}
-nh := {{nh|default('80e-9')}}
+// Size magnets (m)
+nw := {{nw|default('220e-9')}} // width
+nh := {{nh|default('80e-9')}}  // height
+nt := {{nt|detault('25e-9')}}  // thickness
 
 // External field
 B := {{B|default('1.0')}}  // magnitude (T)
@@ -27,7 +28,7 @@ OutputFormat = OVF1_TEXT
 
 // Set up grid
 // TODO: parameterize
-SetMesh(256, 256, 1, 10e-09, 10e-09, 15e-09, 0, 0, 0)
+SetMesh(256, 256, 1, 10e-09, 10e-09, nt, 0, 0, 0)
 
 // Add B_ext first
 tableAdd(B_ext)
