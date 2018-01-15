@@ -28,11 +28,8 @@ def parse_sweep_spec(spec):
         return np.linspace(start, stop, num)
 
     # a,b,c,... = list
-    if ',' in spec:
-        values = re.split(',', spec)
-        return values
-
-    raise ValueError("Invalid sweep spec", spec)
+    values = re.split(',', spec)
+    return values
 
 
 def main(args):
