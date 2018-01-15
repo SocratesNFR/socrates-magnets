@@ -11,7 +11,7 @@ m = uniform(cos(rad), sin(rad), 0) // polarizing field
 //B_ext = vector(B * cos(rad), B * sin(rad), 0)
 
 relax()
-//save(m)
+save(m)
 
 time_start := now()
 
