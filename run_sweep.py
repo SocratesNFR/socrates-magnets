@@ -65,7 +65,7 @@ def main(args):
             d = {'params': params, 'filename': outfile}
             info[-1].append(d)
 
-    print("Generated {} jobs in {}".format(len(sweep_list), args.outdir))
+    print("Generated {} jobs in {}".format(len(queue), args.outdir))
 
     info_filename = os.path.join(args.outdir, 'run_info.pickle')
     run_info = {
