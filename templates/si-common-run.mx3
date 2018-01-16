@@ -8,15 +8,19 @@
 //m = uniform(B * cos(rad), B * sin(rad), 0)
 m = uniform(cos(rad), sin(rad), 0) // polarizing field
 //m.loadfile("gen/si-square-fixed.out/m000000.ovf")
-//B_ext = vector(B * cos(rad), B * sin(rad), 0)
 
-relax()
+// relax() is not deterministic, so we use run() instead
+// Set up a polarizing field which we gradually reduce to zero
+B_ext = vector((1 - f * t) * cos(rad), (1 - f * t) * sin(rad), 0)
+run(1/f)
+B_ext = vector(0, 0, 0)
+run(1/f)
 save(m)
 
-time_start := now()
+// Reset time
+t = 0
 
-//relax()
-//snapshot(m)
+time_start := now()
 
 // Set external field
 B_ext = vector(B * sin(2*pi*f*t) * cos(rad), B * sin(2*pi*f*t) * sin(rad), 0)
@@ -26,8 +30,8 @@ if spp > 0 {
 }
 
 if fpp > 0 {
-    autosnapshot(m, (1/f)/fpp)
-    //autosave(m, (1/f)/fpp)
+    //autosnapshot(m, (1/f)/fpp)
+    autosave(m, (1/f)/fpp)
 }
 
 run(periods/f)

@@ -11,3 +11,5 @@
 tags
 *.log
 *.prof
+*.out
+gen/
