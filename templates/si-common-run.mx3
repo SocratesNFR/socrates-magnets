@@ -1,5 +1,5 @@
 //
-// Square spin ice, common run procedure
+// Spin ice, common run procedure
 //
 
 // Set initial magnetization in each nanomagnet
@@ -30,12 +30,14 @@ if spp > 0 {
 }
 
 if fpp > 0 {
-    //autosnapshot(m, (1/f)/fpp)
-    autosave(m, (1/f)/fpp)
+    if ovf {
+        autosave(m, (1/f)/fpp)
+    } else {
+        autosnapshot(m, (1/f)/fpp)
+    }
 }
 
 run(periods/f)
-//run(1e-9)
 
 time_end := now()
 elapsed := time_end.Sub(time_start)

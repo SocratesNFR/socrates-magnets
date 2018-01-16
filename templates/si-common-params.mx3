@@ -1,11 +1,14 @@
 //
-// Square spin ice, common parameters
+// Spin ice, common parameters
 //
 
 // Material parameters
 Msat    = {{Msat|default('860e3')}}
-Aex     = {{Aex|default('2 * 13e-12')}}
+Aex     = {{Aex|default('13e-12')}}
 alpha   = {{alpha|default('0.01')}}
+
+// Cell size: should be less than exchange length
+c := {{c|default('5e-9')}}
 
 // Size magnets (m)
 nw := {{nw|default('220e-9')}} // width
@@ -24,11 +27,8 @@ spp := {{spp|default('1000')}} // samples per period
 fpp := {{fpp|default('100')}}  // frames per period (autosnapshot)
 
 // Output format
-OutputFormat = OVF1_TEXT
-
-// Set up grid
-// TODO: parameterize
-SetMesh(256, 256, 1, 10e-09, 10e-09, nt, 0, 0, 0)
+ovf := {{ovf|default('false')}} // Save OVF instead of images
+SnapshotFormat = "png"
 
 // Add B_ext first
 tableAdd(B_ext)

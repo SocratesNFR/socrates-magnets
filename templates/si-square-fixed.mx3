@@ -8,6 +8,11 @@
 n_horiz := {{n_horiz|default('4')}}
 n_vert  := {{n_vert|default('4')}}
 
+sizex := (n_horiz * nw + (n_horiz + 1) * nh)
+sizey := (n_vert * nw + (n_vert + 1) * nh)
+
+{% include 'si-common-grid.mx3' %}
+
 // Start with an empty region
 // TODO: this is a hack, any better way?
 islands := square(1e-9).sub(square(1e-9))

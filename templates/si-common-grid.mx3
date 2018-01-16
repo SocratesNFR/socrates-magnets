@@ -1,0 +1,15 @@
+//
+// Spin ice, grid setup
+//
+
+print("Cell size: ", c)
+
+SetCellSize(c, c, nt)
+
+// Calculate number of cells as power of two
+nx := pow(2, ceil(log2(sizex / c)))
+ny := pow(2, ceil(log2(sizey / c)))
+
+print("Number of cells (", nx, ", ", ny, ", 1 )")
+
+SetGridSize(nx, ny, 1)
