@@ -1,0 +1,51 @@
+//
+// Spin ice, bit stream excitation
+//
+
+// Field strength to encode 1 (hi) and 0 (lo)
+B_hi := {{B_hi|default('0.1')}}
+B_lo := {{B_lo|default('0.0')}}
+
+// Bit string
+print("bits = {{bits}}")
+bits := NewSlice(1, {{bits|length}}, 1, 1)
+{% for bit in bits %}
+bits.set(0, {{loop.index0}}, 0, 0, {{bit}})
+{% endfor %}
+
+time_start := now()
+
+if spp > 0 {
+    tableautosave((1/f)/spp)
+}
+
+if fpp > 0 {
+    if ovf {
+        autosave(m, (1/f)/fpp)
+    } else {
+        autosnapshot(m, (1/f)/fpp)
+    }
+}
+
+for i := 0; i < bits.size()[0]; i++ {
+    // Set external field
+    bit := bits.get(0, i, 0, 0)
+    if bit == 1 {
+        B = B_hi
+    } else {
+        B = B_lo
+    }
+    print("bit:", bit, "-> B=", B)
+    B_ext = vector(B * sin(2*pi*f*t) * cos(rad), B * sin(2*pi*f*t) * sin(rad), 0)
+
+    // Run 1 period
+    run(1/f)
+}
+
+// Relax for 1 period
+run(1/f)
+
+time_end := now()
+elapsed := time_end.Sub(time_start)
+print("Elapsed time: ", elapsed)
+

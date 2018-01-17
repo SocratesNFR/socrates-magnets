@@ -1,0 +1,15 @@
+//
+// Square spin ice, fixed size, sine wave excitation
+//
+
+{% include 'inc/params.mx3' %}
+
+// Number of horizontal and vertical magnets
+n_horiz := {{n_horiz|default('4')}}
+n_vert  := {{n_vert|default('4')}}
+
+{% include 'inc/si-square-fixed.mx3' %}
+
+{% include 'inc/relax.mx3' %}
+
+{% include 'inc/run-sin-bitstream.mx3' %}
