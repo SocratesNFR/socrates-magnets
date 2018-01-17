@@ -2,7 +2,7 @@
 // Square spin ice, fixed size
 //
 
-{% include 'si-common-params.mx3' %}
+{% include 'inc/params.mx3' %}
 
 // Number of horizontal and vertical magnets
 n_horiz := {{n_horiz|default('4')}}
@@ -11,7 +11,7 @@ n_vert  := {{n_vert|default('4')}}
 sizex := (n_horiz * nw + (n_horiz + 1) * nh)
 sizey := (n_vert * nw + (n_vert + 1) * nh)
 
-{% include 'si-common-grid.mx3' %}
+{% include 'inc/grid.mx3' %}
 
 // Start with an empty region
 // TODO: this is a hack, any better way?
@@ -73,4 +73,4 @@ for j := 0; j < n_vert; j++ {
 
 setGeom(islands)
 
-{% include 'si-common-run.mx3' %}
+{% include 'inc/run-sin.mx3' %}
