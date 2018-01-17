@@ -43,6 +43,7 @@ for i := 0; i < bits.size()[0]; i++ {
 }
 
 // Relax for 1 period
+B_ext = vector(0, 0, 0)
 run(1/f)
 
 time_end := now()
