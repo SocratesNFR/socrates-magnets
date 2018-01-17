@@ -10,25 +10,54 @@ from mx3util import gen_job, run_local, run_dist, StoreKeyValue
 
 n_gpus_dist = 2
 
+def func_bin(values):
+    values = np.array(values, dtype=int)
+    max_value = np.max(values)
+    assert max_value >= 0, "Values must be unsigned"
+    if max_value == 0:
+        n_bits = 1
+    else:
+        n_bits = int(np.floor(np.log2(max_value)) + 1)
+    fmt = '{:0' + str(n_bits) + 'b}' # ugh
+    bits = list(map(fmt.format, values))
+    return bits
+
+funcs = {
+    'bin': func_bin,
+}
+
 def parse_sweep_spec(spec):
+    # func(sweep_spec)
+    m = re.match(r'(\w+)\((.*)\)', spec)
+    fn = None
+    if m:
+        fn = funcs[m.group(1)]
+        spec = m.group(2)
+
     # start:stop:step = arange
     if ':' in spec:
         m = re.match('(.*):(.*):(.*)', spec)
         if not m:
             raise ValueError("Expected start:stop:step for arange")
         start, stop, step = map(float, m.groups())
-        return np.arange(start, stop, step)
+        values = np.arange(start, stop, step)
 
     # [start,stop,num] = linspace
-    if spec.startswith('['):
+    elif spec.startswith('['):
         m = re.match('\[(.*),(.*),(.*)\]', spec)
         if not m:
             raise ValueError("Expected [start,stop,num] for linspace")
         start, stop, num = map(float, m.groups())
-        return np.linspace(start, stop, num)
+        values = np.linspace(start, stop, num)
 
     # a,b,c,... = list
-    values = re.split(',', spec)
+    else:
+        values = re.split(',', spec)
+
+    # Apply function
+    if fn:
+        values = fn(values)
+
     return values
 
 
