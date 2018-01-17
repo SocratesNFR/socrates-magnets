@@ -1,5 +1,5 @@
 //
-// Square spin ice, fixed size
+// Square spin ice, fixed size, sine wave excitation
 //
 
 {% include 'inc/params.mx3' %}
@@ -8,69 +8,8 @@
 n_horiz := {{n_horiz|default('4')}}
 n_vert  := {{n_vert|default('4')}}
 
-sizex := (n_horiz * nw + (n_horiz + 1) * nh)
-sizey := (n_vert * nw + (n_vert + 1) * nh)
+{% include 'inc/si-square-fixed.mx3' %}
 
-{% include 'inc/grid.mx3' %}
-
-// Start with an empty region
-// TODO: this is a hack, any better way?
-islands := square(1e-9).sub(square(1e-9))
-
-width := n_horiz * nw + (n_horiz + 1) * nh
-height := n_vert * nw + (n_vert + 1) * nh
-
-// Define horizontal nanomagnets: odd region index
-r := 1
-xs := -(n_horiz * nw + (n_horiz - 1) * nh) / 2 + nw/2
-ys := -(n_vert * nw + (n_vert - 1) * nh) / 2 - nh/2
-y := ys
-for j := 0; j < n_vert + 1; j++ {
-    x := xs
-    for i := 0; i < n_horiz; i++ {
-        //dx := nw/2 + nh + i * (nw + nh)
-        //dy := nh/2 + j * (nw + nh)
-        //dy := 0
-
-        island := rect(nw, nh).transl(x, y, 0)
-        islands = islands.add(island)
-
-        x += nw + nh
-
-        print("horiz (", j, ",", i, ") r", r, "x", x, "y", y)
-        defregion(r, island)
-        tableAdd(m.Region(r))
-        r += 2
-    }
-
-    y += nw + nh
-}
-
-// Define vertical nanomagnets: even region index
-r = 2
-xs = -(n_horiz * nw + (n_horiz - 1) * nh) / 2 - nh/2
-ys = -(n_vert * nw + (n_vert - 1) * nh) / 2 + nw/2
-y = ys
-for j := 0; j < n_vert; j++ {
-    x := xs
-    for i := 0; i < n_horiz + 1; i++ {
-        //dx := nh/2 + i * (nw + nh)
-        //dy := nw/2 + nh + j * (nw + nh)
-
-        island := rect(nh, nw).transl(x, y, 0)
-        islands = islands.add(island)
-
-        x += nw + nh
-
-        print("vert (", j, ",", i, ") r", r, "x", x, "y", y)
-        defregion(r, island)
-        tableAdd(m.Region(r))
-        r += 2
-    }
-
-    y += nw + nh
-}
-
-setGeom(islands)
+{% include 'inc/relax.mx3' %}
 
 {% include 'inc/run-sin.mx3' %}

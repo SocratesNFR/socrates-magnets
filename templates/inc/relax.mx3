@@ -1,0 +1,28 @@
+//
+// Deterministic relax procedure
+//
+// relax() is not deterministic, so we use run() instead.
+// Relax by setting up a strong polarizing field which we
+// gradually reduce to zero.
+//
+
+// Set initial magnetization in each nanomagnet
+//m = randomMagSeed(now().nanosecond())
+//m = uniform(1,1,0)
+//m = uniform(B * cos(rad), B * sin(rad), 0)
+m = uniform(cos(rad), sin(rad), 0) // polarizing field
+//m.loadfile("gen/si-square-fixed.out/m000000.ovf")
+
+// Set up a polarizing field which we gradually reduce to zero
+B_ext = vector((1 - f * t) * cos(rad), (1 - f * t) * sin(rad), 0)
+run(1/f)
+
+// Let system settle with zero field
+B_ext = vector(0, 0, 0)
+run(1/f)
+
+// Save initial state as OVF
+save(m)
+
+// Reset time afterwards
+t = 0
