@@ -5,7 +5,7 @@ import argparse
 import re
 import fnmatch
 import numpy as np
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 try:
     from subprocess import DEVNULL
 except ImportError:
@@ -17,7 +17,7 @@ DEFAULT_JOB_SCRIPT_TEMPLATE = 'mumax3.pbs.sh'
 
 def get_template(template):
     loader = FileSystemLoader(TEMPLATES_PATH)
-    env = Environment(loader=loader)
+    env = Environment(loader=loader, trim_blocks=True, undefined=StrictUndefined)
     return env.get_template(template)
 
 def gen_job(template, outfile, **params):
