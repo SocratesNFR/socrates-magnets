@@ -5,6 +5,7 @@ import argparse
 import re
 import fnmatch
 import numpy as np
+from collections import OrderedDict
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
 try:
     from subprocess import DEVNULL
@@ -73,7 +74,7 @@ class StoreKeyValue(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         k, v = values.split('=')
         if getattr(namespace, self.dest) is None:
-            setattr(namespace, self.dest, {})
+            setattr(namespace, self.dest, OrderedDict())
         d = getattr(namespace, self.dest)
         d[k] = v
 
