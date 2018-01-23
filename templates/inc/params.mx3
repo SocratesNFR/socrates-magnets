@@ -14,6 +14,7 @@ c := {{c|default('5e-9')}}
 nw := {{nw|default('220e-9')}} // width
 nh := {{nh|default('80e-9')}}  // height
 nt := {{nt|default('25e-9')}}  // thickness
+ls := {{ls|default('320e-9')}} // lattice spacing
 
 // External field
 B := {{B|default('1.0')}}  // magnitude (T)

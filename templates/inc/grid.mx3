@@ -10,6 +10,7 @@ SetCellSize(c, c, nt)
 nx := pow(2, ceil(log2(sizex / c)))
 ny := pow(2, ceil(log2(sizey / c)))
 
+print("World size: (", sizex, ", ", sizey, ")")
 print("Number of cells (", nx, ", ", ny, ", 1 )")
 
 SetGridSize(nx, ny, 1)
