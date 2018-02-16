@@ -123,8 +123,13 @@ def load_stats(filename, var, stat, spp, skip):
 
     return sweep_param, sweep_values, stats
 
+# def load_stats(f,v,s,spp,skip):
+    # return 'Foo', np.arange(10), np.random.uniform(size=10)
 
 def main(args):
+    labels = args.label if args.label else args.filename
+    title = args.title
+
     sweep_params = []
     sweep_values = []
     stats = []
@@ -135,33 +140,33 @@ def main(args):
         stats.append(st)
 
     assert len(set(sweep_params)) == 1, "Different sweep params?"
-    sweep_param = sweep_params[0]
-    sweep_values = np.concatenate(sweep_values)
-    stats = np.concatenate(stats)
 
-    # plt.plot(sweep_values, stats, 'o-')
-    # plt.semilogy(sweep_values, stats, 'o-', basey=2)
-    plt.plot(sweep_values, stats, 'o-')
-    # plt.plot(2**np.array(sweep_values), stats, 'o-')
-    # plt.plot(sweep_values, 2**sweep_values)
+    if args.combine:
+        sweep_params = [sweep_params[0]]
+        sweep_values = [np.concatenate(sweep_values)]
+        stats = [np.concatenate(stats)]
 
-    # TODO: Better title
-    title = "\n".join(args.filename)
-    plt.title(title)
+    assert len(labels) >= len(stats), "Need more labels!"
 
-    plt.xlabel(sweep_param)
+    for sp, sv, st, lb in zip(sweep_params, sweep_values, stats, labels):
+        # plt.plot(sweep_values, stats, 'o-')
+        # plt.semilogy(sweep_values, stats, 'o-', basey=2)
+        plt.plot(sv, st, 'o-', label=lb)
+        # plt.plot(2**np.array(sweep_values), stats, 'o-')
+        # plt.plot(sv, 2**np.array(sv))
+
+    if title:
+        plt.title(title)
+
+    plt.xlabel(sweep_params[0])
     plt.ylabel(args.stat)
 
+    if len(stats) > 1:
+        plt.legend()
+
     if args.savefig:
-        filename = args.savefig
-        if n_vars > 1:
-            f, ext = os.path.splitext(filename)
-            filename = '{}_%s{}'.format(f, ext)
-        for i, v in zip(plt.get_fignums(), variables):
-            plt.figure(i)
-            f = filename % (v,) if n_vars > 1 else filename
-            print("Saving figure {}".format(f))
-            plt.savefig(f)
+        print("Saving figure {}".format(args.savefig))
+        plt.savefig(args.savefig)
     else:
         plt.show()
 
@@ -171,15 +176,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('-f', '--filename', nargs='+', help='run_info file(s)')
     parser.add_argument('-v', '--variables', nargs='+',
-                        help='list of variables to plot')
+            help='list of variables to plot')
     parser.add_argument('-t', '--stat', choices=stats_available.keys(),
             default='state_count')
+    parser.add_argument('-c', '--combine', action='store_true', default=False,
+            help='Combine input files to single plot')
     parser.add_argument('-s', '--spp', type=int, default=100,
             help='Samples per period')
     parser.add_argument('-k', '--skip', type=float, default=0,
             help='Periods to skip')
     parser.add_argument('-o', '--savefig',
             help='Save figure(s) to file')
+    parser.add_argument('-l', '--label', nargs='+')
+    parser.add_argument('--title')
 
     args = parser.parse_args()
 
