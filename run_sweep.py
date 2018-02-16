@@ -88,11 +88,12 @@ def main(args):
                 outfile = "{}.{:06d}.{:06d}{}".format(base, i, j, ext)
             else:
                 outfile = "{}.{:06d}{}".format(base, i, ext)
-            params.update(repeat_params)
+            runparams = dict(params)
+            runparams.update(repeat_params)
             out = os.path.join(args.outdir, outfile)
-            gen_job(args.template, out, **params)
+            gen_job(args.template, out, **runparams)
             queue.append(out)
-            d = {'params': params, 'filename': outfile}
+            d = {'params': runparams, 'filename': outfile}
             info[-1].append(d)
 
     print("Generated {} jobs in {}".format(len(queue), args.outdir))
