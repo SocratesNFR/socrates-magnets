@@ -121,3 +121,11 @@ def match_vars(patterns, variables):
             else:
                 raise IndexError(v)
     return var
+
+def bit_array(x, n_bits):
+    """ Convert number x to array of bits """
+    return np.array([(x & (1 << bit)) >> bit for bit in range(n_bits)])
+
+def array_bit(a):
+    """ Convert bit array a to number """
+    return sum([(b << bit) for (bit, b) in enumerate(a)])
