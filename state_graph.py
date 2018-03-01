@@ -21,7 +21,7 @@ def state_label(s):
 def group_consecutive(l):
     return [list(map(itemgetter(1), g)) for k, g in groupby(enumerate(l), (lambda i: i[0]-i[1]))]
 
-def load_graph(filename, var, spp, skip, run_index=0, input_param=None):
+def load_graph(filename, var, spp, skip, run_index=0, input_param=None, label_time=False):
     print("Loading {}...".format(filename))
     basedir = os.path.dirname(filename)
     info = load_run_info(filename)
@@ -69,11 +69,14 @@ def load_graph(filename, var, spp, skip, run_index=0, input_param=None):
     # Add labels
     for u in G.nodes:
         # G.nodes[u]['label'] = '{} ({})'.format(u, G.nodes[u]['count'])
-        t = group_consecutive(G.nodes[u]['t'])
-        tl = ['{}-{}'.format(ti[0], ti[-1]) if len(ti) > 1 else '{}'.format(ti[0]) for ti in t]
-        tl = ', '.join(tl)
+        if label_time:
+            t = group_consecutive(G.nodes[u]['t'])
+            tl = ['{}-{}'.format(ti[0], ti[-1]) if len(ti) > 1 else '{}'.format(ti[0]) for ti in t]
+            tl = ', '.join(tl)
 
-        G.nodes[u]['label'] = '{} (t={})'.format(u, tl)
+            G.nodes[u]['label'] = '{} (t={})'.format(u, tl)
+        else:
+            G.nodes[u]['label'] = u
 
     print("Graph: {} nodes, {} edges".format(G.number_of_nodes(), G.number_of_edges()))
 
@@ -98,7 +101,7 @@ def show_graph(G):
     plt.show()
 
 def main(args):
-    G = load_graph(args.filename, args.variables, args.spp, args.skip, args.run, args.input_param)
+    G = load_graph(args.filename, args.variables, args.spp, args.skip, args.run, args.input_param, args.label_time)
 
     if args.dot:
         write_dot(G, args.dot)
@@ -122,10 +125,9 @@ if __name__ == '__main__':
     parser.add_argument('-k', '--skip', type=float, default=0,
             help='Periods to skip')
     parser.add_argument('-I', '--input-param', help='Name of input parameter for edge labels')
+    parser.add_argument('-t', '--label-time', action='store_true', help='Label node by time visited')
     parser.add_argument('-o', '--savefig', help='Save figure(s) to file')
     parser.add_argument('-d', '--dot', help='Save Graphviz dotfile')
-    parser.add_argument('-l', '--label', nargs='+')
-    parser.add_argument('--title')
 
     args = parser.parse_args()
 
