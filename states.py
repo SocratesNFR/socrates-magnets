@@ -4,7 +4,7 @@ import os
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-from itertools import cycle
+from itertools import cycle, groupby
 from mx3util import parse_table_header, load_table, match_vars
 
 def run_load_sweep(sweep_data, suptitle=None):
@@ -64,10 +64,28 @@ def count_diff(X):
     diff = np.count_nonzero(X[:,:-1] != X[:,1:], axis=2)
     return np.sum(diff, axis=1)
 
+def count_final_len(X):
+    final_lens = []
+    for Xi in X:
+        # Going backwards, find the first group of equal elements
+        groups = groupby(map(tuple, Xi[::-1]))
+        first = next(groups)
+        final_len = len(list(first[1]))
+        final_lens.append(final_len)
+        '''
+        eqfinal = np.all(Xi == Xi[-1], axis=1)
+        print(eqfinal)
+        # Going backwards, find index first state not equal to final state
+        final_len = np.where(eqfinal[::-1] == False)[0][0]
+        final_lens.append(final_len)
+        '''
+    return np.mean(final_lens)
+
 stats_available = {
     'state_count': count_states,
     'state_diff': count_diff,
     'final_count': count_final_states,
+    'final_len': count_final_len,
 }
 
 def load_stats(filename, var, stat, spp, skip):
