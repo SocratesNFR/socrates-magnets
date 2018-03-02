@@ -5,45 +5,11 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from itertools import cycle, groupby
-from mx3util import parse_table_header, load_table, match_vars
-
-def run_load_sweep(sweep_data, suptitle=None):
-    for data in sweep_data['sweep_data']:
-        run_load_single(data, suptitle)
-
-def load_run_info(filename):
-    return pickle.load(open(filename, "rb"), encoding='latin1')
-
-def poincare(X, step, skip=10):
-    step = int(step)
-    skip = int(skip * step)
-    return X[skip::step]
-
-def get_tablefile(mx3_filename):
-    base, _ = os.path.splitext(mx3_filename)
-    # print("base", base)
-    # basedir = os.path.dirname(mx3_filename)
-    # outdir = os.path.join(basedir, base + ".out")
-    outdir = base + ".out"
-    tablefile = os.path.join(outdir, "table.txt")
-    return tablefile
+from mx3util import *
 
 def load_data(tablefile, variables, spp=100, skip=1):
     X = load_table(tablefile, variables)
-    if len(variables) == 1:
-        X.shape += (1,)
-
-    n_periods = int(X.shape[0] / spp)
-    X = X[:n_periods * spp] # truncate
-    step = spp
-    assert skip < n_periods, "{}: Not enough periods ({}) to skip {}".format(tablefile, n_periods, skip)
-
-    PX = poincare(X, step, skip)
-
-    # digitize
-    DX = np.where(PX > 0, 1, 0)
-
-    return DX
+    return digitize(X, spp, skip)
 
 def unique_states(X):
     # Concatenate runs
@@ -90,18 +56,17 @@ stats_available = {
 
 def load_stats(filename, var, stat, spp, skip):
     print("Loading {}...".format(filename))
-    basedir = os.path.dirname(filename)
-    info = load_run_info(filename)
-    run_info = info['run_info']
-    sweep_spec = info['sweep_spec']
+    run = RunInfo(filename, load=True)
+    sweep_spec = run['sweep_spec']
     assert len(sweep_spec) == 1, "Sweep must be 1D"
     sweep_spec = sweep_spec[0]
     sweep_param = sweep_spec[0][0]
     sweep_values = [sp[1] for sp in sweep_spec]
+    assert len(sweep_values) == run.run_count, "Not enough runs"
     stat_fn = stats_available[stat]
 
     print("#Parameter values: {}".format(len(sweep_values)))
-    print("#Runs per value: {}".format(list(map(len, run_info))))
+    print("#Runs per value: {}".format(run.repeat_counts()))
     print("Sweep parameter: {}".format(sweep_param))
     print("Parameter range: {}..{} [{}]".format(
         np.min(sweep_values), np.max(sweep_values),
@@ -109,10 +74,8 @@ def load_stats(filename, var, stat, spp, skip):
     print("Statistic: {}".format(stat))
 
     # Learn available variables from first run
-    mx3_filename = os.path.join(basedir, run_info[0][0]['filename'])
-    tablefile = get_tablefile(mx3_filename)
-    headers, _ = parse_table_header(tablefile)
-    variables = match_vars(var, headers)
+    header = run.get_header(0, 0)
+    variables = match_vars(var, header)
 
     print("Variables: {}".format(", ".join(variables)))
 
@@ -121,28 +84,25 @@ def load_stats(filename, var, stat, spp, skip):
     stats = np.zeros(len(sweep_values), dtype=int)
     state_count = np.zeros(len(sweep_values), dtype=int)
 
-    for j, runs in enumerate(run_info):
+    for run_index in range(run.run_count):
         X = []
         try:
-            for run in runs:
-                mx3_filename = os.path.join(basedir, run['filename'])
-                tablefile = get_tablefile(mx3_filename)
-                Xi = load_data(tablefile, variables, spp, skip)
+            for repeat_index in range(run.repeat_count(run_index)):
+                Xi = run.load_table(run_index, repeat_index, variables)
+                Xi = poincare(Xi, spp, skip)
+                Xi = digitize(Xi)
                 X.append(Xi)
         except FileNotFoundError:
             print("incomplete", end=' ', flush=True)
             continue
 
         X = np.array(X)
-        stats[j] = stat_fn(X)
-        print(stats[j], end=' ', flush=True)
+        stats[run_index] = stat_fn(X)
+        print(stats[run_index], end=' ', flush=True)
 
     print("\n")
 
     return sweep_param, sweep_values, stats
-
-# def load_stats(f,v,s,spp,skip):
-    # return 'Foo', np.arange(10), np.random.uniform(size=10)
 
 def main(args):
     labels = args.label if args.label else args.filename

@@ -9,9 +9,7 @@ import subprocess
 from itertools import groupby
 from operator import itemgetter
 from networkx.drawing.nx_agraph import write_dot
-from mx3util import parse_table_header, load_table, match_vars, array_bit
-
-from states import load_run_info, get_tablefile, load_data
+from mx3util import *
 
 def state_label(s):
     # return ('0x{:0' + str(len(s)) + 'x}').format(array_bit(s))
@@ -23,38 +21,33 @@ def group_consecutive(l):
 
 def load_graph(filename, var, spp, skip, run_index=0, input_param=None, label_time=False):
     print("Loading {}...".format(filename))
-    basedir = os.path.dirname(filename)
-    info = load_run_info(filename)
-    run_info = info['run_info']
+    run = RunInfo(filename, load=True)
+    repeat_count = run.repeat_count(run_index)
 
-    print("#Runs per value: {}".format(list(map(len, run_info))))
-    print("Run index: {} ({} runs)".format(run_index, len(run_info[run_index])))
+    print("Run index: {} ({} repetitions)".format(run_index, repeat_count))
 
-    # Learn available variables from first run
-    mx3_filename = os.path.join(basedir, run_info[0][0]['filename'])
-    tablefile = get_tablefile(mx3_filename)
-    headers, _ = parse_table_header(tablefile)
-    variables = match_vars(var, headers)
+    # Learn available variables from first repetition
+    header = run.get_header(run_index, 0)
+    variables = match_vars(var, header)
 
     print("Variables: {}".format(", ".join(variables)))
-
-    n_vars = len(variables)
 
     G = nx.DiGraph()
     # G = nx.MultiDiGraph()
 
-    for i, run in enumerate(run_info[run_index]):
-        mx3_filename = os.path.join(basedir, run['filename'])
-        tablefile = get_tablefile(mx3_filename)
-        X = load_data(tablefile, variables, spp, skip)
+    for i in range(repeat_count):
+        X = run.load_table(run_index, i, variables)
+        X = poincare(X, spp, skip)
+        X = digitize(X)
+
         states = list(map(state_label, X))
         attrs = [{}]*(len(states)-1)
         if input_param:
-            input = run['params'][input_param]
+            input = run.run_info[run_index][i]['params'][input_param]
             attrs = [{'label': i} for i in input]
             # attrs = [{'label': input[:i+1]} for i in range(len(input))]
             # attrs = [{'label': input} for i in input]
-            # print(attrs)
+            print(attrs)
 
         for u, v, attr in zip(states[:-1], states[1:], attrs):
             # print("{}->{} {}".format(u, v, attr))

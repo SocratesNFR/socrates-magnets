@@ -4,6 +4,7 @@ import os
 import argparse
 import re
 import fnmatch
+import pickle
 import numpy as np
 from collections import OrderedDict
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -129,3 +130,73 @@ def bit_array(x, n_bits):
 def array_bit(a):
     """ Convert bit array a to number """
     return sum([(b << bit) for (bit, b) in enumerate(a)])
+
+def poincare(X, step, skip=10):
+    step = int(step)
+    skip = int(skip * step)
+    return X[skip::step]
+
+def digitize(X, threshold=0):
+    return np.where(X > threshold, 1, 0)
+
+def load_run_info(filename):
+    return pickle.load(open(filename, "rb"), encoding='latin1')
+
+def get_tablefile(mx3_filename):
+    base, _ = os.path.splitext(mx3_filename)
+    # print("base", base)
+    # basedir = os.path.dirname(mx3_filename)
+    # outdir = os.path.join(basedir, base + ".out")
+    outdir = base + ".out"
+    tablefile = os.path.join(outdir, "table.txt")
+    return tablefile
+
+class RunInfo(object):
+    def __init__(self, filename, load=False):
+        self.filename = filename
+        self.info = {}
+        if load:
+            self.load()
+
+    def load(self):
+        self.info = load_run_info(self.filename)
+
+    def save(self):
+        with open(self.filename, 'wb') as f:
+            pickle.dump(self.info, f)
+
+    def __getitem__(self, i):
+        return self.info[i]
+
+    @property
+    def basedir(self):
+        return os.path.dirname(self.filename)
+
+    @property
+    def run_info(self):
+        return self.info['run_info']
+
+    @property
+    def run_count(self):
+        return len(self.run_info)
+
+    def repeat_count(self, run_index):
+        return len(self.run_info[run_index])
+
+    def repeat_counts(self):
+        return list(map(len, self.run_info))
+
+    def get_mx3_filename(self, run_index, repeat_index):
+        return os.path.join(self.basedir, self.run_info[run_index][repeat_index]['filename'])
+
+    def get_table_filename(self, run_index, repeat_index):
+        return get_tablefile(self.get_mx3_filename(run_index, repeat_index))
+
+    def get_header(self, run_index=0, repeat_index=0):
+        tablefile = self.get_table_filename(run_index, repeat_index)
+        headers, _ = parse_table_header(tablefile)
+        return headers
+
+    def load_table(self, run_index, repeat_index, columns=None):
+        tablefile = self.get_table_filename(run_index, repeat_index)
+        return load_table(tablefile, columns)
