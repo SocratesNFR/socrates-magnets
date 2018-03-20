@@ -56,24 +56,24 @@ def fig_bitstream():
     plt.figure(figsize=(textwidth*0.7, textwidth*0.7*gr))
 
     filenames = [
-        '/data/socrates/mx3/si-square-fixed-bitstream-220x80x25-ls320-phi45-sin-B_lo0-B_hi70-sweep-nbits/run_info.pickle',
-        '/data/socrates/mx3/si-square-fixed-bitstream-220x80x25-ls320-phi45-sin-B_lo0-B_hi76-sweep-nbits/run_info.pickle',
-        '/data/socrates/mx3/si-square-fixed-bitstream-220x80x25-ls320-phi45-sin-B_lo0-B_hi79-sweep-nbits/run_info.pickle',
-        '/data/socrates/mx3/si-square-fixed-bitstream-220x80x25-ls320-phi45-sin-B_lo0-B_hi81-sweep-nbits/run_info.pickle',
+        '/data/socrates/mx3/si-square-fixed-bitstream-220x80x25-ls320-phi45-sin-B_lo70-B_hi76-sweep-nbits/run_info.pickle',
+        '/data/socrates/mx3/si-square-fixed-bitstream-220x80x25-ls320-phi45-sin-B_lo70-B_hi79-sweep-nbits/run_info.pickle',
+        '/data/socrates/mx3/si-square-fixed-bitstream-220x80x25-ls320-phi45-sin-B_lo70-B_hi81-sweep-nbits/run_info.pickle',
+        '/data/socrates/mx3/si-square-fixed-bitstream-220x80x25-ls320-phi45-sin-B_lo70-B_hi84-sweep-nbits/run_info.pickle',
         ]
 
     labels = [
-        '$A_{hi}=0.070$',
         '$A_{hi}=0.076$',
         '$A_{hi}=0.079$',
         '$A_{hi}=0.081$',
+        '$A_{hi}=0.084$',
         ]
 
     for filename, label in zip(filenames, labels):
         sp, sv, st = load_stats(filename, variables, 'final_count', spp=100, skip=0)
         plt.plot(sv, st, label=label)
 
-    plt.plot(sv, 2**np.array(sv), label="$2^N$", color="black")
+    plt.plot(sv, 2**np.array(sv), label="$2^N$", color="black", ls='--')
 
     plt.xlabel('Number of bits $N$')
     plt.ylabel('Unique final states $S$')
