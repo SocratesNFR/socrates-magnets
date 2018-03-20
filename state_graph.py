@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 import subprocess
-from itertools import groupby
+from itertools import groupby, cycle
 from operator import itemgetter
 from networkx.drawing.nx_agraph import write_dot
 from mx3util import *
@@ -19,7 +19,7 @@ def state_label(s):
 def group_consecutive(l):
     return [list(map(itemgetter(1), g)) for k, g in groupby(enumerate(l), (lambda i: i[0]-i[1]))]
 
-def load_graph(filename, var, spp, skip, run_index=0, input_param=None, label_time=False):
+def load_graph(filename, var, spp, skip, run_index=0, input_param=None, labels=True, label_time=False, color_nodes=False):
     print("Loading {}...".format(filename))
     run = RunInfo(filename, load=True)
     repeat_count = run.repeat_count(run_index)
@@ -37,7 +37,9 @@ def load_graph(filename, var, spp, skip, run_index=0, input_param=None, label_ti
 
     for i in range(repeat_count):
         X = run.load_table(run_index, i, variables)
+        n_periods = int(X.shape[0] / spp)
         X = poincare(X, spp, skip)
+        X = X[:n_periods] # truncate
         X = digitize(X)
 
         states = list(map(state_label, X))
@@ -59,6 +61,11 @@ def load_graph(filename, var, spp, skip, run_index=0, input_param=None, label_ti
             G.nodes[u].setdefault('t', [])
             G.nodes[u]['t'].append(t)
 
+    print("Graph: {} nodes, {} edges".format(G.number_of_nodes(), G.number_of_edges()))
+
+    return G
+
+def label_nodes(G, labels=True, label_time=False):
     # Add labels
     for u in G.nodes:
         # G.nodes[u]['label'] = '{} ({})'.format(u, G.nodes[u]['count'])
@@ -68,18 +75,27 @@ def load_graph(filename, var, spp, skip, run_index=0, input_param=None, label_ti
             tl = ', '.join(tl)
 
             G.nodes[u]['label'] = '{} (t={})'.format(u, tl)
-        else:
+        elif labels:
             G.nodes[u]['label'] = u
+        else:
+            G.nodes[u]['label'] = ""
+            G.nodes[u]['shape'] = "circle"
 
-    print("Graph: {} nodes, {} edges".format(G.number_of_nodes(), G.number_of_edges()))
+def color_nodes(G):
+    colors = cycle(plt.rcParams['axes.prop_cycle'].by_key()['color'])
+    for u in G.nodes:
+        c = next(colors)
+        G.nodes[u]['fillcolor'] = c
+        G.nodes[u]['style'] = "filled"
+        G.nodes[u]['penwidth'] = 0
 
-    return G
-
-def write_dotpng(G, png):
-    dot = args.savefig + '.dot'
+def write_dotfig(G, filename):
+    base, ext = os.path.splitext(filename)
+    dot = base + '.dot'
     write_dot(G, dot)
-    argv = ['dot', '-Tpng', dot]
-    fd = open(png, 'wb')
+    ext = ext[1:]
+    argv = ['dot', '-T' + ext, dot]
+    fd = open(filename, 'wb')
     return subprocess.call(argv, stdout=fd)
 
 def show_graph(G):
@@ -94,12 +110,18 @@ def show_graph(G):
     plt.show()
 
 def main(args):
-    G = load_graph(args.filename, args.variables, args.spp, args.skip, args.run, args.input_param, args.label_time)
+    G = load_graph(args.filename, args.variables, args.spp, args.skip,
+            args.run, args.input_param)
+
+    label_nodes(G, args.labels, args.label_time)
+
+    if args.colors:
+        color_nodes(G)
 
     if args.dot:
         write_dot(G, args.dot)
     if args.savefig:
-        write_dotpng(G, args.savefig)
+        write_dotfig(G, args.savefig)
     else:
         show_graph(G)
 
@@ -118,7 +140,9 @@ if __name__ == '__main__':
     parser.add_argument('-k', '--skip', type=float, default=0,
             help='Periods to skip')
     parser.add_argument('-I', '--input-param', help='Name of input parameter for edge labels')
+    parser.add_argument('-l', '--labels', action='store_true', help='Label nodes')
     parser.add_argument('-t', '--label-time', action='store_true', help='Label node by time visited')
+    parser.add_argument('--colors', action='store_true', help='Color nodes')
     parser.add_argument('-o', '--savefig', help='Save figure(s) to file')
     parser.add_argument('-d', '--dot', help='Save Graphviz dotfile')
 
