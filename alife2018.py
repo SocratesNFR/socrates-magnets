@@ -4,6 +4,7 @@ import os
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
+from itertools import cycle
 
 from states import load_stats
 # from mx3util import *
@@ -18,7 +19,6 @@ variables = ['m.region{}x'.format(i) for i in range(1,41,2)] + \
 
 def savefig(basename):
     print(basename + ".{pdf,svg,png}")
-    plt.tight_layout(pad=0)
     plt.savefig(basename + ".pdf")
     plt.savefig(basename + ".svg")
     plt.savefig(basename + ".png", dpi=600)
@@ -49,6 +49,7 @@ def fig_states():
     plt.ylabel('Unique states $S$')
     plt.legend()
 
+    plt.tight_layout(pad=0)
     savefig("states")
 
 def fig_bitstream():
@@ -78,9 +79,54 @@ def fig_bitstream():
     plt.ylabel('Unique final states $S$')
     plt.legend()
 
+    plt.tight_layout(pad=0)
     savefig("states-bitstream")
 
+def fig_encoding():
+    # plt.figure(figsize=(textwidth*0.7, textwidth*0.7*gr))
+
+    B_lo = 0.050
+    B_hi = 0.070
+    bits = [0, 1, 0, 1]
+    N = len(bits)
+    spp = 1000
+    t = np.linspace(0, N, N * spp)
+    A = np.where(bits, B_hi, B_lo)
+    A = np.repeat(A, spp)
+    B = A * np.sin(2 * np.pi * t)
+
+    plt.xlabel('Time')
+    plt.ylabel('External field')
+
+    plt.yticks([-B_hi, -B_lo, 0, B_lo, B_hi], ['$-A_{hi}$', '$-A_{lo}$', '0', '$A_{lo}$', '$A_{hi}$'])
+    plt.xticks(np.arange(N+1))
+    plt.tick_params(axis='x', which='both', bottom='off', labelbottom='off')
+
+    plt.grid(True, axis='x')
+    plt.axhline(color='black', lw=0.75)
+
+    plt.axhline(-B_hi, color='gray', lw=0.75, ls='dashed')
+    plt.axhline(-B_lo, color='gray', lw=0.75, ls='dashed')
+    plt.axhline( B_lo, color='gray', lw=0.75, ls='dashed')
+    plt.axhline( B_hi, color='gray', lw=0.75, ls='dashed')
+
+
+    colors = cycle(['gainsboro', 'whitesmoke'])
+    for i, bit in enumerate(bits):
+        t0 = t[spp * i]
+        t1 = t[spp * (i + 1) - 1]
+        plt.text(t0 + 0.45, B_hi*1.2, str(bit), {'fontsize': 'large', 'color': 'black' })
+        plt.axvspan(i, i+1, color=next(colors))
+
+
+    plt.plot(t, B)
+
+    plt.tight_layout(pad=0)
+    plt.subplots_adjust(top=0.9)
+    savefig("encoding")
+    plt.show()
 
 if __name__ == '__main__':
     fig_states()
     fig_bitstream()
+    fig_encoding()
