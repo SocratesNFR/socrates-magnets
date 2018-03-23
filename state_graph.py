@@ -19,7 +19,7 @@ def state_label(s):
 def group_consecutive(l):
     return [list(map(itemgetter(1), g)) for k, g in groupby(enumerate(l), (lambda i: i[0]-i[1]))]
 
-def load_graph(filename, var, spp, skip, run_index=0, input_param=None, labels=True, label_time=False, color_nodes=False):
+def load_graph(filename, var, spp, skip, run_index=0, input_param=None):
     print("Loading {}...".format(filename))
     run = RunInfo(filename, load=True)
     repeat_count = run.repeat_count(run_index)
@@ -37,9 +37,7 @@ def load_graph(filename, var, spp, skip, run_index=0, input_param=None, labels=T
 
     for i in range(repeat_count):
         X = run.load_table(run_index, i, variables)
-        n_periods = int(X.shape[0] / spp)
         X = poincare(X, spp, skip)
-        X = X[:n_periods] # truncate
         X = digitize(X)
 
         states = list(map(state_label, X))
@@ -83,7 +81,7 @@ def label_nodes(G, labels=True, label_time=False):
 
 def color_nodes(G):
     colors = cycle(plt.rcParams['axes.prop_cycle'].by_key()['color'])
-    for u in G.nodes:
+    for u in sorted(G.nodes, reverse=True):
         c = next(colors)
         G.nodes[u]['fillcolor'] = c
         G.nodes[u]['style'] = "filled"

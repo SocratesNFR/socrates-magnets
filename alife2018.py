@@ -42,7 +42,7 @@ def fig_states():
         ]
 
     for filename, label in zip(filenames, labels):
-        sp, sv, st = load_stats(filename, variables, 'state_count', spp=100, skip=0)
+        sp, sv, st = load_stats(filename, variables, 'state_count', spp=100, skip=1)
         sv = np.array(sv) * 1e3 # mT
         plt.plot(sv, st, label=label)
 

@@ -89,9 +89,7 @@ def load_stats(filename, var, stat, spp, skip):
         try:
             for repeat_index in range(run.repeat_count(run_index)):
                 Xi = run.load_table(run_index, repeat_index, variables)
-                n_periods = int(Xi.shape[0] / spp)
                 Xi = poincare(Xi, spp, skip)
-                Xi = Xi[:n_periods] # truncate
                 Xi = digitize(Xi)
                 X.append(Xi)
         except FileNotFoundError:
