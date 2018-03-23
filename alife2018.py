@@ -43,9 +43,10 @@ def fig_states():
 
     for filename, label in zip(filenames, labels):
         sp, sv, st = load_stats(filename, variables, 'state_count', spp=100, skip=0)
+        sv = np.array(sv) * 1e3 # mT
         plt.plot(sv, st, label=label)
 
-    plt.xlabel('Field strength $A$')
+    plt.xlabel('Field strength $A$ [mT]')
     plt.ylabel('Unique states $S$')
     plt.legend()
 
@@ -63,10 +64,10 @@ def fig_bitstream():
         ]
 
     labels = [
-        '$A_{hi}=0.076$',
-        '$A_{hi}=0.079$',
-        '$A_{hi}=0.081$',
-        '$A_{hi}=0.084$',
+        '$A_{hi}=76$ mT',
+        '$A_{hi}=79$ mT',
+        '$A_{hi}=81$ mT',
+        '$A_{hi}=84$ mT',
         ]
 
     for filename, label in zip(filenames, labels):
