@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from itertools import cycle
 
 from states import load_stats
+from state_graph import load_graph, label_nodes, color_nodes, write_dotfig
 # from mx3util import *
 
 plt.style.use('publish')
@@ -52,6 +53,32 @@ def fig_states():
 
     plt.tight_layout(pad=0)
     savefig("states")
+
+def fig_graphs():
+    filenames = [
+        '/data/socrates/mx3/si-square-fixed-4x4-220x80x25-ls320-phi45-sin-10MHz-sweep-B-100p-detailed/run_info.pickle',
+        '/data/socrates/mx3/si-square-fixed-4x4-220x80x25-ls320-phi45-sin-50MHz-sweep-B-100p-detailed/run_info.pickle',
+        ]
+
+    run_indices = [
+        11,
+        21
+        ]
+
+    outputs = [
+        'graph-10MHz-r11',
+        'graph-50MHz-r21',
+        ]
+
+    for filename, run_index, out in zip(filenames, run_indices, outputs):
+        G = load_graph(filename, variables, spp=100, skip=0, run_index=run_index)
+        label_nodes(G, False, False)
+        color_nodes(G)
+
+        print(out + ".{pdf,svg,png}")
+        write_dotfig(G, out + ".pdf")
+        write_dotfig(G, out + ".svg")
+        write_dotfig(G, out + ".png")
 
 def fig_bitstream():
     plt.figure(figsize=(textwidth*0.7, textwidth*0.7*gr))
@@ -129,5 +156,6 @@ def fig_encoding():
 
 if __name__ == '__main__':
     fig_states()
+    fig_graphs()
     fig_bitstream()
     fig_encoding()
