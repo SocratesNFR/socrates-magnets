@@ -45,6 +45,8 @@ def fig_states():
     for filename, label in zip(filenames, labels):
         sp, sv, st = load_stats(filename, variables, 'state_count', spp=100, skip=1)
         sv = np.array(sv) * 1e3 # mT
+        sv = sv[5:] # skip 60-64
+        st = st[5:] # skip 60-64
         plt.plot(sv, st, label=label)
 
     plt.xlabel('Field strength $A$ [mT]')
@@ -124,7 +126,7 @@ def fig_encoding():
     B = A * np.sin(2 * np.pi * t)
 
     plt.xlabel('Time')
-    plt.ylabel('External field')
+    plt.ylabel('External field $B$')
 
     plt.yticks([-B_hi, -B_lo, 0, B_lo, B_hi], ['$-A_{hi}$', '$-A_{lo}$', '0', '$A_{lo}$', '$A_{hi}$'])
     plt.xticks(np.arange(N+1))
