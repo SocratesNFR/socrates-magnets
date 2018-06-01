@@ -47,7 +47,7 @@ def fig_states():
         sv = np.array(sv) * 1e3 # mT
         sv = sv[5:] # skip 60-64
         st = st[5:] # skip 60-64
-        plt.plot(sv, st, label=label)
+        plt.plot(sv, st, 'o-', label=label)
 
     plt.xlabel('Field strength $A$ [mT]')
     plt.ylabel('Unique states $S$')
@@ -101,7 +101,7 @@ def fig_bitstream():
 
     for filename, label in zip(filenames, labels):
         sp, sv, st = load_stats(filename, variables, 'final_count', spp=100, skip=0)
-        plt.plot(sv, st, label=label)
+        plt.plot(sv, st, 'o-', label=label)
 
     plt.plot(sv, 2**np.array(sv), label="$2^N$", color="black", ls='--')
 
