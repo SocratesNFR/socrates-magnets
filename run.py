@@ -14,7 +14,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Run mx3 job')
-    parser.add_argument('-r', '--run', choices=['local', 'dist'], default='local',
+    parser.add_argument('-r', '--run', choices=['local', 'dist', 'none'], default='local',
                         help='run locally or distributed on a cluster')
     parser.add_argument('-i', '--interactive', action='store_true',
                         help='run mumax3 interactively')

@@ -14,7 +14,7 @@ except ImportError:
     DEVNULL = open(os.devnull, 'w')
 
 TEMPLATES_PATH = ['templates', '.']
-DEFAULT_JOB_SCRIPT_TEMPLATE = 'mumax3.pbs.sh'
+DEFAULT_JOB_SCRIPT_TEMPLATE = 'mumax3.slurm.sh'
 
 
 def get_template(template):
@@ -53,18 +53,19 @@ def run_dist(jobs, wait=True, job_script_template=DEFAULT_JOB_SCRIPT_TEMPLATE):
 
     # Name job script as concatenation of job names
     job_names = [os.path.splitext(os.path.basename(job))[0] for job in jobs]
-    job_script_name = "__".join(job_names) + ".pbs.sh"
+    job_script_name = "__".join(job_names)
 
-    job_script = os.path.join(job_script_dir, job_script_name)
+    job_script = os.path.join(job_script_dir, job_script_name + ".slurm.sh")
     jobs_param = " ".join(jobs)
 
-    gen_job(job_script_template, job_script, jobs=jobs_param, job_script_dir=job_script_dir)
+    gen_job(job_script_template, job_script, jobs=jobs_param,
+            job_script_dir=job_script_dir, job_script_name=job_script_name)
 
     #
     # Submit job
     #
-    qsub = ['qsub', '-Wblock=true', job_script]
-    p = subprocess.Popen(qsub)
+    cmd = ['sbatch', '--wait', job_script]
+    p = subprocess.Popen(cmd)
 
     if wait:
         p.wait()

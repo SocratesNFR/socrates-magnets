@@ -9,7 +9,7 @@ import numpy as np
 from collections import OrderedDict
 from mx3util import gen_job, run_local, run_dist, StoreKeyValue
 
-n_gpus_dist = 2
+n_gpus_dist = 1
 
 def func_bin(values):
     values = np.array(values, dtype=int)
